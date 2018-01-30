@@ -1,0 +1,162 @@
+\input texinfo  @c -*-Texinfo-*-
+@c To compile: makeinfo  -I . rsplit.texi -o rsplit.info
+
+@setfilename rsplit.info
+@settitle rsplit Manual
+@footnotestyle end
+
+@ifinfo
+@dircategory Text creation and manipulation
+@direntry
+* rsplit: (rsplit).	rsplit manual
+@end direntry
+
+This is @cite{The rsplit Manual}, for rsplit.
+
+Copyright 2011, 2012, 2013 Matthew Love.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+@ignore
+Permission is granted to process this file through TeX and print the
+results, provided the printed document carries copying permission
+notice identical to this one except for the removal of this paragraph
+(this paragraph not being relevant to the printed manual).
+@end ignore
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+@end ifinfo
+
+@titlepage
+@title rsplit
+@subtitle Randomly extract lines from a text file.
+@subtitle Manual
+@author Matthew Love
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 2011, 2012, 2013 Matthew Love.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+@end titlepage
+
+@node Top, Copying, (dir), (dir)
+
+@ifnottex
+This document describes the program @code{rsplit}.
+
+@end ifnottex
+
+@menu
+* Copying::                     Distribution conditions
+* Introduction::                Brief introduction to rsplit
+
+* Using rsplit::                Using rsplit
+* Examples::                    Examples
+@end menu
+
+@node Copying, Introduction, Top, Top
+@chapter Copying
+@cindex Copying
+
+rsplit is copyright (C) 2011, 2012, 2013 Matthew Love and is released under the
+terms of the GNU General Public License. See the included file
+@file{COPYING} for the full text of the license (or @pxref{Copying, ,
+Copying, emacs, The GNU Emacs Manual}).
+
+@quotation
+This is free software -- you are welcome to redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2, or
+(at your option) any later version.
+
+rsplit is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+@end quotation
+
+@node Introduction, Using rsplit, Copying, Top
+@chapter Introduction
+@cindex Introduction
+
+Randomly extract a percentage or set number of lines from a text file.  The randomly extracted lines gets printed to @code{stdout}, optionally, the remaining lines can be printed to @code{stderr}, allowing for the random splitting of text files.
+
+@node Using rsplit, Examples, Introduction, Top
+@chapter Using rsplit
+@cindex Using rsplit
+@cindex rsplit, using
+
+rsplit is a command-line program designed to be run in a shell program such as bash.
+
+For general usage help from the command-line, the @code{--help} swich can be used. 
+
+@verbatim
+~] rsplit --help
+
+Usage: rpslit [OPTIONS] [infile]
+
+Randomly extract a percentage of lines from a text file.
+
+Options:
+  -p, --percent         The percent of lines to randomly extract 
+                        from the input.
+  -n, --number  	If set, will interpret the -p option as the total number of
+                	lines to extract, rather than as a percentage.
+  -l, --line-num        Include line numbers in output.
+  -r, --remaining       Send the lines that aren't extracted to stderr.
+
+  --version             Print version information and exit.
+
+Example: rsplit test.xyz -p 20 -lr > test_rand20.xyz 2>test_base.xyz
+@end verbatim
+
+@itemize @bullet
+@item The @code{-p, --percent} switch specifies the percentage of randomly selected points to extract from the given text file.
+@item The @code{-l, --line-num} switch prints the line number along with the original line from the input text file.
+@item The @code{-r, --remianing} switch prints the remianing lines after random extraction to @code{stderr}.
+@end itemize
+
+@node Examples, ,Using rsplit, Top
+@chapter Examples
+@cindex Examples
+
+@itemize @bullet
+@item Extract 20 percent of the lines in the input text file and print the results to stdout
+
+@verbatim
+~] rsplit -p 20 input.txt
+@end verbatim
+
+@item Extract 15 percent of the lines in the input text file and write the results to a file, include the line numbers
+
+@verbatim
+~] rsplit -p 20 --line-num input.txt > rand20_input.txt
+@end verbatim
+
+@item Extract 40 percent of the lines in the input text file, write the results to a file and send the remaining lines to another file.
+
+@verbatim
+~] rsplit test.xyz -p 40 -r > test_rand40.xyz 2>test_base60.xyz
+@end verbatim
+
+@item Extract 100 random lines from the input text file, write the results to a file and send the remaining lines to another file.
+
+@verbatim
+~] rsplit test.xyz -p 100 -nr > test_rand.xyz 2>test_base.xyz
+@end verbatim
+@end itemize
+
+@contents
+@bye

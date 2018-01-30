@@ -6,6 +6,7 @@ AC_CONFIG_AUX_DIR([./config])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 #AC_CONFIG_SRCDIR([.])
 AM_PROG_AR
+AC_CONFIG_MACRO_DIR([m4])
 
 # Checks for programs.
 AC_PROG_CC

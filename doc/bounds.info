@@ -1,0 +1,140 @@
+This is rsplit.info, produced by makeinfo version 4.13 from rsplit.texi.
+
+INFO-DIR-SECTION Text creation and manipulation
+START-INFO-DIR-ENTRY
+* rsplit: (rsplit).	rsplit manual
+END-INFO-DIR-ENTRY
+
+   This is `The rsplit Manual', for rsplit.
+
+   Copyright 2011, 2012, 2013 Matthew Love.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided that
+the entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+
+File: rsplit.info,  Node: Top,  Next: Copying,  Prev: (dir),  Up: (dir)
+
+   This document describes the program `rsplit'.
+
+* Menu:
+
+* Copying::                     Distribution conditions
+* Introduction::                Brief introduction to rsplit
+
+* Using rsplit::                Using rsplit
+* Examples::                    Examples
+
+
+File: rsplit.info,  Node: Copying,  Next: Introduction,  Prev: Top,  Up: Top
+
+1 Copying
+*********
+
+rsplit is copyright (C) 2011, 2012, 2013 Matthew Love and is released
+under the terms of the GNU General Public License. See the included file
+`COPYING' for the full text of the license (or *note Copying:
+(emacs)Copying.).
+
+     This is free software - you are welcome to redistribute it and/or
+     modify it under the terms of the GNU General Public License as
+     published by the Free Software Foundation; either version 2, or
+     (at your option) any later version.
+
+     rsplit is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+
+File: rsplit.info,  Node: Introduction,  Next: Using rsplit,  Prev: Copying,  Up: Top
+
+2 Introduction
+**************
+
+Randomly extract a percentage or set number of lines from a text file.
+The randomly extracted lines gets printed to `stdout', optionally, the
+remaining lines can be printed to `stderr', allowing for the random
+splitting of text files.
+
+
+File: rsplit.info,  Node: Using rsplit,  Next: Examples,  Prev: Introduction,  Up: Top
+
+3 Using rsplit
+**************
+
+rsplit is a command-line program designed to be run in a shell program
+such as bash.
+
+   For general usage help from the command-line, the `--help' swich can
+be used.
+
+~] rsplit --help
+
+Usage: rpslit [OPTIONS] [infile]
+
+Randomly extract a percentage of lines from a text file.
+
+Options:
+  -p, --percent         The percent of lines to randomly extract
+                        from the input.
+  -n, --number  	If set, will interpret the -p option as the total number of
+                	lines to extract, rather than as a percentage.
+  -l, --line-num        Include line numbers in output.
+  -r, --remaining       Send the lines that aren't extracted to stderr.
+
+  --version             Print version information and exit.
+
+Example: rsplit test.xyz -p 20 -lr > test_rand20.xyz 2>test_base.xyz
+
+   * The `-p, --percent' switch specifies the percentage of randomly
+     selected points to extract from the given text file.
+
+   * The `-l, --line-num' switch prints the line number along with the
+     original line from the input text file.
+
+   * The `-r, --remianing' switch prints the remianing lines after
+     random extraction to `stderr'.
+
+
+File: rsplit.info,  Node: Examples,  Prev: Using rsplit,  Up: Top
+
+4 Examples
+**********
+
+   * Extract 20 percent of the lines in the input text file and print
+     the results to stdout
+
+     ~] rsplit -p 20 input.txt
+
+   * Extract 15 percent of the lines in the input text file and write
+     the results to a file, include the line numbers
+
+     ~] rsplit -p 20 --line-num input.txt > rand20_input.txt
+
+   * Extract 40 percent of the lines in the input text file, write the
+     results to a file and send the remaining lines to another file.
+
+     ~] rsplit test.xyz -p 40 -r > test_rand40.xyz 2>test_base60.xyz
+
+   * Extract 100 random lines from the input text file, write the
+     results to a file and send the remaining lines to another file.
+
+     ~] rsplit test.xyz -p 100 -nr > test_rand.xyz 2>test_base.xyz
+
+
+
+Tag Table:
+Node: Top703
+Node: Copying1042
+Node: Introduction1866
+Node: Using rsplit2222
+Node: Examples3485
+
+End Tag Table
