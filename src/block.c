@@ -1,7 +1,7 @@
 /*------------------------------------------------------------
  * block.c
  *
- * Copyright (c) 2011-2016 Matthew Love <matthew.love@colorado.edu>
+ * Copyright (c) 2011-2018 Matthew Love <matthew.love@colorado.edu>
  * This file is liscensed under the GPL v.2 or later and 
  * is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
