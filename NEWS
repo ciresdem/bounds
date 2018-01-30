@@ -1,0 +1,7 @@
+** 10/25/16 **
+
+- New release (0.4.0)
+- Added 'block_pts' boundary option for generating a polygon around a set of points by gridding the dataset and polygonizing the result.
+- Bug Fixes in bounds.c and hull.c
+
+**************
