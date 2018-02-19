@@ -133,6 +133,7 @@ inside(point_t* p1, point_t* poly, ssize_t hullsize, double dist) {
  * -- Retruns the number of points in the boundary;
  * The hull makes up the begining of the points array.
  * Generate the concave hull using the given distance threshold
+ * Note: The input points must be sorted first.
  */
 ssize_t
 dpw_concave(point_t* points, int npoints, double d) {
@@ -194,7 +195,8 @@ dpw_concave(point_t* points, int npoints, double d) {
 /* 
  * A Monotone-Chain Convex Hull
  * -- Returns a list of points on the convex hull in counter-clockwise order.
- * Note: the last point in the returned list is the same as the first one. 
+ * Note: The last point in the returned list is the same as the first one. 
+ * Note: The input points must be sorted first.
  */
 void
 mc_convex(point_t* points, ssize_t npoints, point_ptr_t** out_hull, ssize_t* out_hullsize) {

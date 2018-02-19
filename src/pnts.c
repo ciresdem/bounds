@@ -26,6 +26,7 @@ linecnt(FILE *in) {
 }
 
 /* Scan an xyz line and attempt to determine the delimiter and record length 
+ * TODO: guess the delimiter
  */
 int
 scanline(char* infile) {
@@ -82,6 +83,9 @@ read_point(FILE *infile, point_t *rpnt, char* delimiter, char* pnt_recr) {
   return status;
 }
 
+/*
+ * Get the minimum and maximum values from a set of points
+ */
 void
 minmax(point_t* points, int npoints, xyz_info *xyzi) {
   int i;
