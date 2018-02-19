@@ -121,5 +121,9 @@ mc_convex(point_t* points, ssize_t npoints, point_ptr_t** out_hull, ssize_t* out
 ssize_t
 pw_convex(point_t* points, ssize_t npoints);
 
+/* Generate a boundary with blocks
+ * `inc` is the blocksize in the same units
+ * as the input points.
+ */
 int
 block_pts(point_t* points, int npoints, double inc);
