@@ -1,8 +1,10 @@
 /*------------------------------------------------------------
  * bounds.c
  * 
- * Copyright (c) 2011-2018 Matthew Love <matthew.love@colorado.edu>
- * This file is liscensed under the GPL v.2 or later and 
+ * This file is part of BOUNDS
+ *
+ * Copyright (c) 2011, 2012, 2016, 2018 Matthew Love <matthew.love@colorado.edu>
+ * BOUNDS is liscensed under the GPL v.2 or later and 
  * is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -20,7 +22,7 @@ static int help_flag;
 static void
 print_version(const char* command_name, const char* command_version) {
   fprintf(stderr, "%s version %s \n\
-Copyright © 2011-2018 Matthew Love <matthew.love@colorado.edu> \n\
+Copyright © 2011, 2012, 2016, 2018 Matthew Love <matthew.love@colorado.edu> \n\
 %s is liscensed under the GPL v.2 or later and is \n\
 distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n\
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A\n\

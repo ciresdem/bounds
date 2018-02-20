@@ -1,8 +1,10 @@
 /*------------------------------------------------------------
  * pnts.c
  *
- * Copyright (c) 2011-2018 Matthew Love <matthew.love@colorado.edu>
- * This file is liscensed under the GPL v.2 or later and 
+ * This file is part of BOUNDS
+ *
+ * Copyright (c) 2011, 2012, 2013, 2014, 2015, 2018 Matthew Love <matthew.love@colorado.edu>
+ * BOUNDS is liscensed under the GPL v.2 or later and 
  * is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the

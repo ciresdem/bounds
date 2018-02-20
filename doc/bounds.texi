@@ -8,12 +8,12 @@
 @ifinfo
 @dircategory Text creation and manipulation
 @direntry
-* rsplit: (rsplit).	rsplit manual
+* bounds: (bounds).	bounds manual
 @end direntry
 
-This is @cite{The rsplit Manual}, for rsplit.
+This is @cite{The bounds Manual}, for bounds.
 
-Copyright 2011, 2012, 2013 Matthew Love.
+Copyright 2011, 2012, 2016, 2018 Matthew Love.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
