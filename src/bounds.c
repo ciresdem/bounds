@@ -20,7 +20,7 @@ static int help_flag;
 static void
 print_version(const char* command_name, const char* command_version) {
   fprintf(stderr, "%s version %s \n\
-Copyright © 2011-2016 Matthew Love <matthew.love@colorado.edu> \n\
+Copyright © 2011-2018 Matthew Love <matthew.love@colorado.edu> \n\
 %s is liscensed under the GPL v.2 or later and is \n\
 distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n\
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A\n\
@@ -33,7 +33,7 @@ static void
 usage() {
   fprintf(stderr, "\
 bounds infile [Options]\n\n\
-n  Generate a boundary of the given xy point file(s) and print results \n\
+  Generate a boundary of the given xy point file(s) and print results \n\
   to stdout. Optionally, choose between different algorithms to use to \n\
   generate the boundary. The default behavior will generate a convex hull \n\
   boundary. \n\
