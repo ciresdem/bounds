@@ -1,14 +1,14 @@
 \input texinfo  @c -*-Texinfo-*-
-@c To compile: makeinfo  -I . rsplit.texi -o rsplit.info
+@c To compile: makeinfo  -I . bounds.texi -o bounds.info
 
-@setfilename rsplit.info
-@settitle rsplit Manual
+@setfilename bounds.info
+@settitle bounds Manual
 @footnotestyle end
 
 @ifinfo
-@dircategory Text creation and manipulation
+@dircategory Geographic Information Systems
 @direntry
-* bounds: (bounds).	bounds manual
+* bounds: (bounds).	A boundary generation utility.
 @end direntry
 
 This is @cite{The bounds Manual}, for bounds.
@@ -33,13 +33,13 @@ notice identical to this one.
 @end ifinfo
 
 @titlepage
-@title rsplit
-@subtitle Randomly extract lines from a text file.
+@title bounds
+@subtitle Generate a boundary of xyz data
 @subtitle Manual
 @author Matthew Love
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 2011, 2012, 2013 Matthew Love.
+Copyright @copyright{} 2011, 2012, 2013, 2018 Matthew Love.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -54,15 +54,15 @@ notice identical to this one.
 @node Top, Copying, (dir), (dir)
 
 @ifnottex
-This document describes the program @code{rsplit}.
+This document describes the program @code{bounds}.
 
 @end ifnottex
 
 @menu
 * Copying::                     Distribution conditions
-* Introduction::                Brief introduction to rsplit
+* Introduction::                Brief introduction to bounds
 
-* Using rsplit::                Using rsplit
+* Using bounds::                Using bounds
 * Examples::                    Examples
 @end menu
 
@@ -70,7 +70,7 @@ This document describes the program @code{rsplit}.
 @chapter Copying
 @cindex Copying
 
-rsplit is copyright (C) 2011, 2012, 2013 Matthew Love and is released under the
+bounds is copyright (C) 2011, 2012, 2013, 2018 Matthew Love and is released under the
 terms of the GNU General Public License. See the included file
 @file{COPYING} for the full text of the license (or @pxref{Copying, ,
 Copying, emacs, The GNU Emacs Manual}).
@@ -81,80 +81,104 @@ modify it under the terms of the GNU General Public License as
 published by the Free Software Foundation; either version 2, or
 (at your option) any later version.
 
-rsplit is distributed in the hope that it will be useful, but
+bounds is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 @end quotation
 
-@node Introduction, Using rsplit, Copying, Top
+@node Introduction, Using bounds, Copying, Top
 @chapter Introduction
 @cindex Introduction
 
-Randomly extract a percentage or set number of lines from a text file.  The randomly extracted lines gets printed to @code{stdout}, optionally, the remaining lines can be printed to @code{stderr}, allowing for the random splitting of text files.
+Bounds makes available a number of methods for discovering the boundary of a set of xy points.
 
-@node Using rsplit, Examples, Introduction, Top
-@chapter Using rsplit
-@cindex Using rsplit
-@cindex rsplit, using
+A number of boundary methods are available for use:
 
-rsplit is a command-line program designed to be run in a shell program such as bash.
+@itemize
+
+@item Bounding Box
+@item Convex Hull
+@item Convave Hull
+@item Bounding Block
+
+@end itemize
+
+Bounds provides a command-line program @code{bounds} as well as a C library for development using the @code{bounds.h} header file.
+
+@node Using bounds, Examples, Introduction, Top
+@chapter Using bounds
+@cindex Using bounds
+@cindex bounds, using
+
+bounds is a command-line program for the GNU operating system designed to be run in a shell program such as bash.
 
 For general usage help from the command-line, the @code{--help} swich can be used. 
 
 @verbatim
-~] rsplit --help
+~] bounds --help
 
-Usage: rpslit [OPTIONS] [infile]
+bounds infile [Options]
 
-Randomly extract a percentage of lines from a text file.
+  Generate a boundary of the given xy point file(s) and print results 
+  to stdout. Optionally, choose between different algorithms to use to 
+  generate the boundary. The default behavior will generate a convex hull 
+  boundary. 
 
-Options:
-  -p, --percent         The percent of lines to randomly extract 
-                        from the input.
-  -n, --number  	If set, will interpret the -p option as the total number of
-                	lines to extract, rather than as a percentage.
-  -l, --line-num        Include line numbers in output.
-  -r, --remaining       Send the lines that aren't extracted to stderr.
+  infile		The input point file.
 
-  --version             Print version information and exit.
+ Options:
+  -d, --delimiter	The input xy file record delimiter
+     Note: The default will assume a space (" ") is the delimiter.
+  -r, --record		The input record order, 'xy' should represent the locations
+              		of the x and y records, respectively.
+     Note: The default will assume the record begins with 'xy'. If the x and 
+           y records are located elsewhere, fill in records with any letter. i.e.
+           `-r zyx` for data where the record is `elevation,y-value,x-value`.
+  -s, --skip		Skip header lines in the input xy file; specify the number of lines
+            		to skip here.
 
-Example: rsplit test.xyz -p 20 -lr > test_rand20.xyz 2>test_base.xyz
+  -b, --box		Generate a 'bounding box' boundary. 
+  -k, --block		Generate a 'block' boundary. 
+             		Specify the blocking increment here. (e.g. --block 0.001)
+     Note: The blocking increment should be in the same units as the input xy data.
+  -x, --convex		Generate a 'convex hull' boundary using a monotone chain algorithm. (Default)
+  -v, --concave		Generate a 'concave hull' boundary using a distance weighted 
+               		package wrap algorithm. 
+               		Specify the distance threshold used in generating the concave 
+               		hull as an argument here. (e.g. --concave 0.01)
+     Note: The distance threshold should be in the same units as the input xy data.
+
+  --help		Print this help menu and exit.
+  --version		Print version information and exit.
+
 @end verbatim
 
 @itemize @bullet
-@item The @code{-p, --percent} switch specifies the percentage of randomly selected points to extract from the given text file.
-@item The @code{-l, --line-num} switch prints the line number along with the original line from the input text file.
-@item The @code{-r, --remianing} switch prints the remianing lines after random extraction to @code{stderr}.
+@item The @code{-d, --delimiter} switch sets the delimiter of the input xy data.
+@item The @code{-r, --record} switch set the order of xy* data columns.
+@item The @code{-s, --skip} switch sets the number of header lines to skip before reading in data.
+@item The @code{-b, --box} switch sets boundary algorithm to @code{bounding box}.
+@item The @code{-k, --block} switch sets boundary algorithm to @code{bounding block}.
+@item The @code{-x, --convex} switch sets boundary algorithm to @code{convex hull}
+@item The @code{-v, --concave} switch sets boundary algorithm to @code{concave hull}
 @end itemize
 
-@node Examples, ,Using rsplit, Top
+@node Examples, ,Using bounds, Top
 @chapter Examples
 @cindex Examples
 
 @itemize @bullet
-@item Extract 20 percent of the lines in the input text file and print the results to stdout
+@item Generate a bounding box of the input xyz data in input.xyz
 
 @verbatim
-~] rsplit -p 20 input.txt
+~] bounds -b input.xyz
 @end verbatim
 
-@item Extract 15 percent of the lines in the input text file and write the results to a file, include the line numbers
+@item Generate a bounding block boundary from the yxz data in input.yxz using blocking paremter of 0.001 degrees and output the boundary to a .gmt file.
 
 @verbatim
-~] rsplit -p 20 --line-num input.txt > rand20_input.txt
-@end verbatim
-
-@item Extract 40 percent of the lines in the input text file, write the results to a file and send the remaining lines to another file.
-
-@verbatim
-~] rsplit test.xyz -p 40 -r > test_rand40.xyz 2>test_base60.xyz
-@end verbatim
-
-@item Extract 100 random lines from the input text file, write the results to a file and send the remaining lines to another file.
-
-@verbatim
-~] rsplit test.xyz -p 100 -nr > test_rand.xyz 2>test_base.xyz
+~] bounds -r yxz -k 0.001 input.yxz > output.gmt
 @end verbatim
 @end itemize
 

@@ -1,1 +1,1 @@
-info_TEXINFOS = bounds.texi
+info_TEXINFOS=bounds.texi
