@@ -1,9 +1,10 @@
-BOUNDS
+# [ B O U N D S ]
 
 BOUNDS is a command-line program for the GNU operating system that generates a boundary of a set of xy points.
 
 With Bounds, generate an ogr-gmt compatible boundary vector of a given point set. There are a number of algorithms to choose from in generating the boundary, including convex hull, concave hull, bounding block and bounding box.
 
+```
 bounds infile [Options]
 
   Generate a boundary of the given xy point file(s) and print results 
@@ -37,3 +38,4 @@ bounds infile [Options]
 
   --help		Print this help menu and exit.
   --version		Print version information and exit.
+```
