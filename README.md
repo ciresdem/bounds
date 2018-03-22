@@ -1,4 +1,4 @@
-# [ B O U N D S ]
+## [ B O U N D S ]
 
 BOUNDS is a command-line program for the GNU operating system that generates a boundary of a set of xy points.
 
