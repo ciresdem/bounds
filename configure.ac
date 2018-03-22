@@ -19,9 +19,15 @@ dnl <http://www.gnu.org/licenses/>
 AC_INIT([bounds], [0.4.2], [matthew.love@colorado.edu])
 AC_CONFIG_AUX_DIR([./config])
 AM_INIT_AUTOMAKE([-Wall -Werror])
-#AC_CONFIG_SRCDIR([.])
-AM_PROG_AR
 AC_CONFIG_MACRO_DIR([m4])
+AM_PROG_AR
+
+AC_CHECK_FUNCS(dlopen)
+if test $ac_cv_func_dlopen = yes
+then DYNAMIC_AG=-export-dynamic
+else DYNAMIC_AG=""
+fi
+AC_SUBST(DYNAMIC_AG)
 
 # Checks for programs.
 AC_PROG_CC

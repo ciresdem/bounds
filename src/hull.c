@@ -131,7 +131,7 @@ inside(point_t* p1, point_t* poly, ssize_t hullsize, double dist) {
   return k & 1;
 }
 
-/* A 'package-wrap' convexhull 
+/* A 'package-wrap' concavehull 
  * -- Retruns the number of points in the boundary;
  * The hull makes up the begining of the points array.
  * Generate the concave hull using the given distance threshold
@@ -224,7 +224,7 @@ mc_convex(point_t* points, ssize_t npoints, point_ptr_t** out_hull, ssize_t* out
 }
 
 /* A 'package-wrap' Convex Hull 
- * -- Retruns the number of points in the hull;
+ * -- Returns the number of points in the hull;
  * The hull makes up the begining of the points array.
  */
 ssize_t

@@ -1,5 +1,5 @@
 /*------------------------------------------------------------
- * bounds : version 0.4.2 : malo
+ * bounds : version 0.4.3
  *
  * This file is part of BOUNDS
  *
@@ -10,16 +10,17 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details. 
  * <http://www.gnu.org/licenses/> 
- *--------------------------------------------------------------*/xx
+ *--------------------------------------------------------------*/
 
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <string.h>
+#include <stddef.h>
 #include <math.h>
 #include <float.h>
 #include <limits.h>
 
-#define BOUNDS_VERSION "0.4.2"
+#define BOUNDS_VERSION "0.4.3"
 
 #define MAX_RECORD_LENGTH 1024
 #define MAX_HULLS 100000
@@ -129,3 +130,5 @@ pw_convex(point_t* points, ssize_t npoints);
  */
 int
 block_pts(point_t* points, int npoints, double inc);
+
+// End
