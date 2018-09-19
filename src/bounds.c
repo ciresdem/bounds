@@ -40,7 +40,7 @@ bounds infile [Options]\n\n\
   generate the boundary. The default behavior will generate a convex hull \n\
   boundary. \n\
 \n\
-  infile\t\tThe input point file.\n\
+  infile\t\tThe input point file. If not given, will read from stdin.\n\
 \n\
  Options:\n\
   -d, --delimiter\tThe input xy file record delimiter\n\
@@ -211,175 +211,160 @@ main (int argc, char **argv) {
 
   if (version_flag) print_version("bounds", BOUNDS_VERSION);
   if (help_flag) usage();
-  if (inflag == 0 && optind >= argc) usage ();
+  //if (inflag == 0 && optind >= argc) usage ();
 
   fn = argv[optind];
   if (fn) inflag++;
+  //if (inflag == 0) {
+  //fp = fopen(fn, "r");
   if (inflag > 0) {
     fp = fopen(fn, "r");
+  } else {
+    fp = stdin;
+    fn = "stdin";
+  }
     
-    if (!fp) {
-      fprintf(stderr,"bounds: Failed to open file: %s\n", fn);
-      exit(0);
-    } else fprintf(stderr,"bounds: Working on file: %s ...\n", fn);
+  if (!fp) {
+    fprintf(stderr,"bounds: Failed to open file: %s\n", fn);
+    exit(0);
+  } else fprintf(stderr,"bounds: Working on file: %s ...\n", fn);
 
-    ssize_t npr = linecnt(fp);
-    fprintf(stderr,"( %d points )\n",npr);
-
-    /* `sl` is a user-defined value of records to skip at
-     * the beginning of the file. If `sflag` is set, reduce 
-     * `npr` accordingly. */
-    if (sflag) npr = npr - sl;
-
-    if (npr == 0) {
-      fclose(fp);
-      exit(0);
+  ssize_t npr = 0;
+  
+  /* Allocate memory for the `pnts` and `pnts2` array using the total number of points.
+   * `pnts2` is only used by concave.
+   */
+  point_t* pnts;  
+  pnts = (point_t*) malloc(sizeof(point_t));
+    
+  /* Read through the point records and record them in `pnts`.
+   */
+  i = 0;
+  while (read_point(fp, &rpnt, delim, ptrec) == 0) {
+    if (sl > 0) sl--;
+    else {
+      npr++;
+      point_t* temp = realloc(pnts, npr * sizeof(point_t));
+      pnts = temp;
+      pnts[i].x = rpnt.x, pnts[i].y = rpnt.y;
+      i++;
     }
+  }
+  
+  /* This is for the GMT compatibility. More can be done here.
+   */
+  printf("# @VGMT1.0 @GMULTIPOLYGON\n# @NName\n# @Tstring\n# FEATURE_DATA\n");
+  printf(">\n# @D%s\n# @P\n", fn);
     
-    /* Allocate memory for the `pnts` and `pnts2` array using the total number of points.
-     * `pnts2` is only used by concave.
-     */
-    point_t* pnts;  
-    pnts = (point_t*) malloc(npr * sizeof(point_t));
-
-    if (!pnts) {
-      fprintf(stderr,"bounds: Failed to allocate memory needed for point storage of %d points.\n", npr);
-      exit(0);
-    }
-
+  /* The default is a convex hull -- `cflag` */
+  if (cflag == 0 && vflag == 0 && bflag == 0 && kflag == 0) cflag++;
+  
+  /* 
+   * Monotone Chain Convex Hull Algorithm - -*Default*-
+   */
+  if (cflag == 1) {
+    qsort(pnts, npr, sizeof(point_t), compare);
+    mc_convex(pnts, npr, &hull, &hullsize);
     
+    for (i = 0; i < hullsize; i++)
+      printf("%f %f\n", hull[i]->x, hull[i]->y);
+    
+    fprintf(stderr, "bounds: Found %d convex boundary points.\n", hullsize);
+  }
+  
+  /* 
+   * 'Package Wrap' Convex Hull Algorithm 
+   */
+  else if (cflag == 1 && calg == 2){
+    hullsize = pw_convex(pnts, npr);
+    
+    for (i = 0; i < hullsize; i++)
+      printf("%f %f\n", pnts[i].x, pnts[i].y);
+    
+    fprintf(stderr, "bounds: Found %d convex boundary points.\n", hullsize);
+  }
+  
+  /* 
+   * Concave Hull - distance weighted pacakage wrap algorithm 
+   * Note: will return a single polygon containing all the given
+   * points, using whatever distance value is needed to
+   * accomplish that.
+   */
+  else if (vflag == 1) {
+    /* The distance parameter can't be less than zero */
+    if (dist > 0) hullsize = -1;
+    else hullsize = 0;
+    
+    /* Keep a copy of the original point-set in `pts2` in-case
+     * we need to re-run with a higher `dist` value. */
+
     point_t* pnts2;  
-    pnts2 = (point_t*) malloc(npr * sizeof(point_t));  
-        
-    if (!pnts2) {
-      fprintf(stderr,"bounds: Failed to allocate memory needed for point storage of %d points.\n", npr);
-      exit(0);
-    }
+    pnts2 = (point_t*) malloc(npr*sizeof(point_t));
+    memcpy(pnts2, pnts, sizeof(point_t)*npr);
     
-    /* Read through the point records and record them in `pnts`.
-     */
-    i = 0;
-    while (read_point(fp, &rpnt, delim, ptrec) == 0) {
-      if (sl > 0) sl--;
-      else {
-	pnts[i].x = rpnt.x, pnts[i].y = rpnt.y;
-	i++;
-      }
-    }
-
-    /* This is for the GMT compatibility. More can be done here.
-     */
-    printf("# @VGMT1.0 @GMULTIPOLYGON\n# @NName\n# @Tstring\n# FEATURE_DATA\n");
-    printf(">\n# @D%s\n# @P\n", fn);
-    
-    /* The default is a convex hull -- `cflag` */
-    if (cflag == 0 && vflag == 0 && bflag == 0 && kflag == 0) cflag++;
-    
-    /* 
-     * Monotone Chain Convex Hull Algorithm - -*Default*-
-     */
-    if (cflag == 1) {
-      qsort(pnts, npr, sizeof(point_t), compare);
-      mc_convex(pnts, npr, &hull, &hullsize);
+    /* Find a boundary, inrease the distance variable until a boundary is found. */
+    while (hullsize == -1) {
+      qsort(pnts, npr, sizeof(point_t), sort_max_x);
+      hullsize = dpw_concave(pnts, npr, dist);
       
-      for (i = 0; i < hullsize; i++)
-	printf("%f %f\n", hull[i]->x, hull[i]->y);
-      
-      fprintf(stderr, "bounds: Found %d convex boundary points.\n", hullsize);
-    }
-    
-    /* 
-     * 'Package Wrap' Convex Hull Algorithm 
-     */
-    else if (cflag == 1 && calg == 2){
-      hullsize = pw_convex(pnts, npr);
-      
-      for (i = 0; i < hullsize; i++)
-	printf("%f %f\n", pnts[i].x, pnts[i].y);
-      
-      fprintf(stderr, "bounds: Found %d convex boundary points.\n", hullsize);
-    }
-    
-    /* 
-     * Concave Hull - distance weighted pacakage wrap algorithm 
-     * Note: will return a single polygon containing all the given
-     * points, using whatever distance value is needed to
-     * accomplish that.
-     */
-    else if (vflag == 1) {
-      /* The distance parameter can't be less than zero */
-      if (dist > 0) hullsize = -1;
-      else hullsize = 0;
-      
-      /* Keep a copy of the original point-set in `pts2` in-case
-       * we need to re-run with a higher `dist` value. */
-      memcpy(pnts2, pnts, sizeof(point_t)*npr);
-
-      /* Find a boundary, inrease the distance variable until a boundary is found. */
-      while (hullsize == -1) {
-	qsort(pnts, npr, sizeof(point_t), sort_max_x);
-	hullsize = dpw_concave(pnts, npr, dist);
-
-	/* If a hull was found, check that it gathered all the points.
-	 * If there are points still outside the boundary, increase the
-	 * distance and retry.
-	 */
-	if (hullsize >= 0)
+      /* If a hull was found, check that it gathered all the points.
+       * If there are points still outside the boundary, increase the
+       * distance and retry.
+       */
+      if (hullsize >= 0)
 	for (i = hullsize; i < npr; i++)
 	  if (!inside(&pnts[i], pnts, hullsize, dist)) {
 	    hullsize = -1;
 	    break;
 	  }
-	
-	/* If a hull wasn't found, increase the `dist` and try again. */
-	if (hullsize == -1) {
-	  dist = dist + (dist * 0.1), pc++;
-	  fprintf(stderr,"\rbounds: Increasing distance ( %f )",dist);
+      
+      /* If a hull wasn't found, increase the `dist` and try again. */
+      if (hullsize == -1) {
+	dist = dist + (dist * 0.1), pc++;
+	fprintf(stderr,"\rbounds: Increasing distance ( %f )",dist);
 	  fflush(stderr);
 	  memcpy(pnts, pnts2, sizeof(point_t)*npr);
-	}
-	
-	/* In case something funky happens. */
-	if (dist == INFINITY || dist == NAN || dist <= FLT_EPSILON) hullsize = 0;
       }
-
-      /* Print out the hull */
-      for (i = 0; i <= hullsize; i++)
-      	printf("%.7f %.7f\n", pnts[i].x, pnts[i].y);
       
-      if (pc > 0) fprintf(stderr,"\n");
-      fprintf(stderr, "bounds: Found %d concave boundary points at a %.6f distance threshhold.\n", hullsize, dist);
+      /* In case something funky happens. */
+      if (dist == INFINITY || dist == NAN || dist <= FLT_EPSILON) hullsize = 0;
     }
+
+    /* Print out the hull */
+    for (i = 0; i <= hullsize; i++)
+      printf("%.7f %.7f\n", pnts[i].x, pnts[i].y);
     
-    /* 
-     * Bounding Box - Generate a box around the given points.
-     */
-    else if (bflag == 1) {
-      int xmin, xmax, ymin, ymax;
-      
-      /* Find the extent values in the dataset */
-      for (ymin = 0, ymax = 0, xmin = 0, xmax = 0, i = 1; i < npr; i++) {
-	if (pnts[i].y < pnts[ymin].y) ymin = i;
-	if (pnts[i].x < pnts[xmin].x) xmin = i;
-	if (pnts[i].y > pnts[ymax].y) ymax = i;
-	if (pnts[i].x > pnts[xmax].x) xmax = i;
-      }
-      printf("%f %f\n", pnts[xmin].x, pnts[ymin].y);
-      printf("%f %f\n", pnts[xmin].x, pnts[ymax].y);
-      printf("%f %f\n", pnts[xmax].x, pnts[ymax].y);
-      printf("%f %f\n", pnts[xmax].x, pnts[ymin].y);
-      printf("%f %f\n", pnts[xmin].x, pnts[ymin].y);
-    }
-
-    /* 
-     * Bounding Block - polygonize a grid of the points using `dist` cell-size
-     */
-    else if (kflag == 1) {
-      /* The distance parameter can't be less than zero */
-      if (dist > 0) block_pts(pnts, npr, dist);
-    }
-    free(pnts), free(pnts2), fclose(fp);
+    if (pc > 0) fprintf(stderr,"\n");
+    fprintf(stderr, "bounds: Found %d concave boundary points at a %.6f distance threshhold.\n", hullsize, dist);
   }
-  else usage ();
+    
+  /* 
+   * Bounding Box - Generate a box around the given points.
+   */
+  else if (bflag == 1) {
+    int xmin, xmax, ymin, ymax;
+    
+    /* Find the extent values in the dataset */
+    for (ymin = 0, ymax = 0, xmin = 0, xmax = 0, i = 1; i < npr; i++) {
+      if (pnts[i].y < pnts[ymin].y) ymin = i;
+      if (pnts[i].x < pnts[xmin].x) xmin = i;
+      if (pnts[i].y > pnts[ymax].y) ymax = i;
+      if (pnts[i].x > pnts[xmax].x) xmax = i;
+    }
+    printf("%f %f\n", pnts[xmin].x, pnts[ymin].y);
+    printf("%f %f\n", pnts[xmin].x, pnts[ymax].y);
+    printf("%f %f\n", pnts[xmax].x, pnts[ymax].y);
+    printf("%f %f\n", pnts[xmax].x, pnts[ymin].y);
+    printf("%f %f\n", pnts[xmin].x, pnts[ymin].y);
+  }
+  
+  /* 
+   * Bounding Block - polygonize a grid of the points using `dist` cell-size
+   */
+  else if (kflag == 1) {
+    /* The distance parameter can't be less than zero */
+    if (dist > 0) block_pts(pnts, npr, dist);
+  }
+  free(pnts), fclose(fp);
   exit(1);
 }
