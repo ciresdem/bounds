@@ -18,10 +18,11 @@
 /* Flags set by `--version' and `--help' */
 static int version_flag;
 static int help_flag;
+static int verbose_flag;
 
 static void
 print_version(const char* command_name, const char* command_version) {
-  fprintf(stderr, "%s version %s \n\
+  fprintf(stderr, "%s %s \n\
 Copyright © 2011, 2012, 2016, 2018 Matthew Love <matthew.love@colorado.edu> \n\
 %s is liscensed under the GPL v.2 or later and is \n\
 distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n\
@@ -34,37 +35,28 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.\n\
 static void 
 usage() {
   fprintf(stderr, "\
-bounds infile [Options]\n\n\
-  Generate a boundary of the given xy point file(s) and print results \n\
-  to stdout. Optionally, choose between different algorithms to use to \n\
-  generate the boundary. The default behavior will generate a convex hull \n\
-  boundary. \n\
+bounds [OPTION]... [FILE]\n\
+Generate a boundary of the set of xy points from FILE(s), or standard input, to standard output.\n\
 \n\
-  infile\t\tThe input point file. If not given, will read from stdin.\n\
+  -d, --delimiter\tthe input xy file record delimiter\n\
+  -r, --record\t\tthe input record order, 'xy' should represent the locations\n\
+              \t\tof the x and y records, respectively. (e.g. --record zdyx)\n\
+  -s, --skip\t\tspecify the number of lines to skip here.\n\
+  -b, --box\t\t'bounding box' boundary. \n\
+  -k, --block\t\t'block' boundary. specify the blocking increment here. (e.g. --block 0.001)\n\
+  -x, --convex\t\t'convex hull' boundary using a monotone chain algorithm. (default)\n\
+  -v, --concave\t\t'concave hull' boundary using a distance weighted package wrap algorithm. \n\
+               \t\tspecify the distance threshold here. (e.g. --concave 0.01)\n\
+      --verbose\t\tincrease the verbosity.\n\
+      --help\t\tprint this help menu and exit.\n\
+      --version\t\tprint version information and exit.\n\n\
 \n\
- Options:\n\
-  -d, --delimiter\tThe input xy file record delimiter\n\
-     Note: The default will assume a space (\" \") is the delimiter.\n\
-  -r, --record\t\tThe input record order, 'xy' should represent the locations\n\
-              \t\tof the x and y records, respectively.\n\
-     Note: The default will assume the record begins with 'xy'. If the x and \n\
-           y records are located elsewhere, fill in records with any letter. i.e.\n\
-           `-r zyx` for data where the record is `elevation,y-value,x-value`.\n\
-  -s, --skip\t\tSkip header lines in the input xy file; specify the number of lines\n\
-            \t\tto skip here.\n\n\
-  -b, --box\t\tGenerate a 'bounding box' boundary. \n\
-  -k, --block\t\tGenerate a 'block' boundary. \n\
-             \t\tSpecify the blocking increment here. (e.g. --block 0.001)\n\
-     Note: The blocking increment should be in the same units as the input xy data.\n\
-  -x, --convex\t\tGenerate a 'convex hull' boundary using a monotone chain algorithm. (Default)\n\
-  -v, --concave\t\tGenerate a 'concave hull' boundary using a distance weighted \n\
-               \t\tpackage wrap algorithm. \n\
-               \t\tSpecify the distance threshold used in generating the concave \n\
-               \t\thull as an argument here. (e.g. --concave 0.01)\n\
-     Note: The distance threshold should be in the same units as the input xy data.\n\
-\n\
-  --help\t\tPrint this help menu and exit.\n\
-  --version\t\tPrint version information and exit.\n\n\
+With no FILE, or when FILE is --, read standard input.\n\
+All OPTION values must be in the same units as the input xy data.\n\n\
+Examples:\n\
+  bounds \t\toutput a convex hull from standard input.\n\
+  bounds -k 0.0001\toutput a 'block' boundary from standard input.\n\
+  bounds -v 10 -d \",\"\toutput a concave hull from comma-delimited standard input.\n\
 ");
   exit(1);
 }
@@ -135,6 +127,7 @@ main (int argc, char **argv) {
   point_ptr_t hull0[MAX_HULLS];
   point_ptr_t* hull = hull0;
   ssize_t hullsize;
+  ssize_t npr = 0;
 
   char* delim = " ";
   char* ptrec = "xy";
@@ -145,6 +138,7 @@ main (int argc, char **argv) {
 	/* These options set a flag. */
 	{"version", no_argument, &version_flag, 1},
 	{"help", no_argument, &help_flag, 1},
+	{"verbose", no_argument, &verbose_flag, 1},
 	/* These options don't set a flag.
 	   We distinguish them by their indices. */
 	{"delimiter", required_argument, 0, 'd'},
@@ -202,6 +196,8 @@ main (int argc, char **argv) {
       
     case '?':
       /* getopt_long already printed an error message. */
+      fprintf(stderr,"Try 'bounds --help' for more information.\n");
+      exit(0);
       break;
       
     default:
@@ -219,17 +215,18 @@ main (int argc, char **argv) {
   //fp = fopen(fn, "r");
   if (inflag > 0) {
     fp = fopen(fn, "r");
+    if (!fp) {
+      fprintf(stderr,"bounds: Failed to open file: %s\n", fn);
+      exit(0);
+    }
   } else {
     fp = stdin;
     fn = "stdin";
   }
-    
-  if (!fp) {
-    fprintf(stderr,"bounds: Failed to open file: %s\n", fn);
-    exit(0);
-  } else fprintf(stderr,"bounds: Working on file: %s ...\n", fn);
 
-  ssize_t npr = 0;
+  if (verbose_flag > 0) {
+    fprintf(stderr, "bounds: Working on file: %s\n", fn);
+  }
   
   /* Allocate memory for the `pnts` and `pnts2` array using the total number of points.
    * `pnts2` is only used by concave.
@@ -269,7 +266,9 @@ main (int argc, char **argv) {
     for (i = 0; i < hullsize; i++)
       printf("%f %f\n", hull[i]->x, hull[i]->y);
     
-    fprintf(stderr, "bounds: Found %d convex boundary points.\n", hullsize);
+    if (verbose_flag > 0) {
+      fprintf(stderr, "bounds: Found %d convex boundary points.\n", hullsize);
+    }
   }
   
   /* 
@@ -281,7 +280,9 @@ main (int argc, char **argv) {
     for (i = 0; i < hullsize; i++)
       printf("%f %f\n", pnts[i].x, pnts[i].y);
     
-    fprintf(stderr, "bounds: Found %d convex boundary points.\n", hullsize);
+    if (verbose_flag > 0) {
+      fprintf(stderr, "bounds: Found %d convex boundary points.\n", hullsize);
+    }
   }
   
   /* 
@@ -321,9 +322,11 @@ main (int argc, char **argv) {
       /* If a hull wasn't found, increase the `dist` and try again. */
       if (hullsize == -1) {
 	dist = dist + (dist * 0.1), pc++;
-	fprintf(stderr,"\rbounds: Increasing distance ( %f )",dist);
+	memcpy(pnts, pnts2, sizeof(point_t)*npr);
+	if (verbose_flag > 0) {
+	  fprintf(stderr,"\rbounds: Increasing distance ( %f )",dist);
 	  fflush(stderr);
-	  memcpy(pnts, pnts2, sizeof(point_t)*npr);
+	}
       }
       
       /* In case something funky happens. */
@@ -334,8 +337,10 @@ main (int argc, char **argv) {
     for (i = 0; i <= hullsize; i++)
       printf("%.7f %.7f\n", pnts[i].x, pnts[i].y);
     
-    if (pc > 0) fprintf(stderr,"\n");
-    fprintf(stderr, "bounds: Found %d concave boundary points at a %.6f distance threshhold.\n", hullsize, dist);
+    if (verbose_flag > 0) {
+      if (pc > 0) fprintf(stderr,"\n");
+      fprintf(stderr, "bounds: Found %d concave boundary points at a %.6f distance threshhold.\n", hullsize, dist);
+    }
   }
     
   /* 
