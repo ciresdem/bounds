@@ -36,7 +36,7 @@ static void
 usage() {
   fprintf(stderr, "\
 bounds [OPTION]... [FILE]\n\
-Generate a boundary of the set of xy points from FILE(s), or standard input, to standard output.\n\
+Generate a boundary of the set of xy points from FILE, or standard input, to standard output.\n\
 \n\
   -d, --delimiter\tthe input xy file record delimiter\n\
   -r, --record\t\tthe input record order, 'xy' should represent the locations\n\

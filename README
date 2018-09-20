@@ -10,7 +10,7 @@ With Bounds, generate an ogr-gmt compatible boundary vector of a given point set
 ---------------------------
 
 bounds [OPTION]... [FILE]
-Generate a boundary of the set of xy points from FILE(s), or standard input, to standard output.
+Generate a boundary of the set of xy points from FILE, or standard input, to standard output.
 
   -d, --delimiter	the input xy file record delimiter
   -r, --record		the input record order, 'xy' should represent the locations
