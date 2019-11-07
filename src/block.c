@@ -3,7 +3,7 @@
  *
  * This file is part of BOUNDS
  *
- * Copyright (c) 2016, 2018 Matthew Love <matthew.love@colorado.edu>
+ * Copyright (c) 2016, 2018, 2019 Matthew Love <matthew.love@colorado.edu>
  * BOUNDS is liscensed under the GPL v.2 or later and 
  * is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,7 +19,7 @@
  * Generates a grid at `inc` cell-size and polygonizes it.
  */
 int
-block_pts(point_t* points, int npoints, double inc) {
+block_pts(point_t* points, int npoints, double inc, int vflag) {
 
   int i, j, xpos, ypos, edge;
   int bb = 0, done = 0, bcount = 0, l = 0, fcount = 0;
@@ -37,7 +37,9 @@ block_pts(point_t* points, int npoints, double inc) {
    to hold all 4 sides of every point in the grid. */
   int xys = (xsize*ysize)*4;
   
-  fprintf(stderr,"bounds: Size of internal grid: %d/%d\n",ysize,xsize);
+  if (vflag > 0) {
+    fprintf(stderr,"bounds: Size of internal grid: %d/%d\n",ysize,xsize);
+  }
 
   /* Allocate memory for arrays */  
   int** blockarray;
@@ -57,6 +59,7 @@ block_pts(point_t* points, int npoints, double inc) {
     fprintf(stderr,"bounds: Failed to allocate needed memory, try increasing the distance value (%f)\n",inc);
     exit(EXIT_FAILURE);
   }
+
   //fprintf(stderr,"bounds: bbarray Initialized\n");
   
   /* Loop through the point records and grid them */
@@ -65,6 +68,8 @@ block_pts(point_t* points, int npoints, double inc) {
     ypos = fabs((points[i].y - xyzi.ymin) / inc);
     blockarray[ypos][xpos] = 1;
   }
+
+  //fprintf(stderr,"bounds: points gridded\n");
   
   /* Loop through the grid and find and record the edge lines */
   for (i = 0; i < ysize; i++) {
@@ -97,6 +102,12 @@ block_pts(point_t* points, int npoints, double inc) {
       }
     }
   }
+
+  /* Free allocated grid 'blockarray' from memory */
+  for (i = 0; i < ysize; i++) free(blockarray[i]);
+  free(blockarray);
+
+  //fprintf(stderr,"bounds: grid edges recorded and blockarray freed\n");
 
   /* Sort the edge lines into polygons */
   while (bb >= 4) {
@@ -135,14 +146,13 @@ block_pts(point_t* points, int npoints, double inc) {
     if (bb >= 4) printf(">\n");
   }
   
-  fprintf(stderr,"bounds: Found %d total boundary points\n", fcount);
-
-  /* Free allocated grid 'blockarray' from memory */
-  for (i = 0; i < ysize; i++) free(blockarray[i]);
-  free(blockarray);
+  if (vflag > 0) {
+    fprintf(stderr,"bounds: Found %d total boundary points\n", fcount);
+  }
   
   /* Free allocated grid bbarray from memory */
   free(bbarray);
+  //fprintf(stderr,"bounds: Freed bbarray\n");
   
   return(1);  
 }

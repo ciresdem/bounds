@@ -1,9 +1,9 @@
 /*------------------------------------------------------------
- * bounds : version 0.4.3
+ * bounds : version 0.4.6
  *
  * This file is part of BOUNDS
  *
- * Copyright (c) 2011, 2012, 2016, 2018 Matthew Love <matthew.love@colorado.edu>
+ * Copyright (c) 2011, 2012, 2016, 2018, 2019 Matthew Love <matthew.love@colorado.edu>
  * BOUNDS is liscensed under the GPL v.2 or later and 
  * is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,7 +20,7 @@
 #include <float.h>
 #include <limits.h>
 
-#define BOUNDS_VERSION "0.4.5"
+#define BOUNDS_VERSION "0.4.6"
 
 #define MAX_RECORD_LENGTH 1024
 #define MAX_HULLS 100000
@@ -129,6 +129,6 @@ pw_convex(point_t* points, ssize_t npoints);
  * as the input points.
  */
 int
-block_pts(point_t* points, int npoints, double inc);
+block_pts(point_t* points, int npoints, double inc, int vflag);
 
 // End

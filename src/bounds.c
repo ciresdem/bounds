@@ -3,7 +3,7 @@
  * 
  * This file is part of BOUNDS
  *
- * Copyright (c) 2011, 2012, 2016, 2018 Matthew Love <matthew.love@colorado.edu>
+ * Copyright (c) 2011, 2012, 2016, 2018, 2019 Matthew Love <matthew.love@colorado.edu>
  * BOUNDS is liscensed under the GPL v.2 or later and 
  * is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -23,7 +23,7 @@ static int verbose_flag;
 static void
 print_version(const char* command_name, const char* command_version) {
   fprintf(stderr, "%s %s \n\
-Copyright © 2011, 2012, 2016, 2018 Matthew Love <matthew.love@colorado.edu> \n\
+Copyright © 2011, 2012, 2016, 2018, 2019 Matthew Love <matthew.love@colorado.edu> \n\
 %s is liscensed under the GPL v.2 or later and is \n\
 distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n\
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A\n\
@@ -42,6 +42,9 @@ Generate a boundary of the set of xy points from FILE, or standard input, to sta
   -r, --record\t\tthe input record order, 'xy' should represent the locations\n\
               \t\tof the x and y records, respectively. (e.g. --record zdyx)\n\
   -s, --skip\t\tspecify the number of lines to skip here.\n\
+  -n, --name\t\tthe output layer name\n\
+  -a, --append\t\tdon't print gmt-header\n\n\
+  ---- bounds ----\n\n\
   -b, --box\t\t'bounding box' boundary. \n\
   -k, --block\t\t'block' boundary. specify the blocking increment here. (e.g. --block 0.001)\n\
   -x, --convex\t\t'convex hull' boundary using a monotone chain algorithm. (default)\n\
@@ -120,7 +123,7 @@ main (int argc, char **argv) {
 
   int c, i, status, min, j;
   int inflag = 0, vflag = 0, sflag = 0, pc = 0, sl = 0;
-  int cflag = 0, kflag = 0, calg = 0, bflag = 0;
+  int cflag = 0, kflag = 0, calg = 0, bflag = 0, gmtflag = 0, nflag = 0;
   double dist = 1;
 
   point_t rpnt, pnt;
@@ -129,8 +132,9 @@ main (int argc, char **argv) {
   ssize_t hullsize;
   ssize_t npr = 0;
 
-  char* delim = " ";
+  char* delim = " \t";
   char* ptrec = "xy";
+  char* lname = "bounds";
   
   while (1) {
     static struct option long_options[] =
@@ -143,6 +147,8 @@ main (int argc, char **argv) {
 	   We distinguish them by their indices. */
 	{"delimiter", required_argument, 0, 'd'},
 	{"skip", required_argument, 0, 's'},
+	{"name", required_argument, 0, 'n'},
+	{"append", no_argument, 0, 'a'},
 	{"record", required_argument, 0, 'r'},
 	{"box", no_argument, 0, 'b'},
 	{"block", required_argument, 0, 'k'},
@@ -153,7 +159,7 @@ main (int argc, char **argv) {
     /* getopt_long stores the option index here. */
     int option_index = 0;
     
-    c = getopt_long (argc, argv, "d:r:s:bk:xv:",
+    c = getopt_long (argc, argv, "ad:n:r:s:bk:xv:",
 		     long_options, &option_index);
     
     /* Detect the end of the options. */
@@ -178,6 +184,13 @@ main (int argc, char **argv) {
     case 's':
       sflag++;
       sl = atoi(optarg);
+      break;
+    case 'n':
+      nflag++;
+      lname = optarg;
+      break;
+    case 'a':
+      gmtflag++;
       break;
     case 'b':
       bflag++;
@@ -250,8 +263,10 @@ main (int argc, char **argv) {
   
   /* This is for the GMT compatibility. More can be done here.
    */
-  printf("# @VGMT1.0 @GMULTIPOLYGON\n# @NName\n# @Tstring\n# FEATURE_DATA\n");
-  printf(">\n# @D%s\n# @P\n", fn);
+  if (gmtflag == 0) {
+    printf("# @VGMT1.0 @GMULTIPOLYGON\n# @NName\n# @Tstring\n# FEATURE_DATA\n");
+  }
+  printf(">\n# @D%s\n# @P\n", lname);
     
   /* The default is a convex hull -- `cflag` */
   if (cflag == 0 && vflag == 0 && bflag == 0 && kflag == 0) cflag++;
@@ -368,7 +383,7 @@ main (int argc, char **argv) {
    */
   else if (kflag == 1) {
     /* The distance parameter can't be less than zero */
-    if (dist > 0) block_pts(pnts, npr, dist);
+    if (dist > 0) block_pts(pnts, npr, dist, verbose_flag);
   }
   free(pnts), fclose(fp);
   exit(1);

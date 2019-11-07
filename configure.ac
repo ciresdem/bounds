@@ -1,5 +1,5 @@
 #                                               -*- Autoconf -*-
-dnl bounds : version 0.4.5
+dnl bounds : version 0.4.6
 dnl
 dnl This file is part of BOUNDS
 dnl
@@ -13,7 +13,7 @@ dnl <http://www.gnu.org/licenses/>
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([bounds], [0.4.5], [matthew.love@colorado.edu])
+AC_INIT([bounds], [0.4.6], [matthew.love@colorado.edu])
 AC_CONFIG_AUX_DIR([./config])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 AC_CONFIG_MACRO_DIR([m4])
