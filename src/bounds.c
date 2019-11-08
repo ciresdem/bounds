@@ -260,7 +260,11 @@ main (int argc, char **argv) {
       i++;
     }
   }
-  
+
+  if (verbose_flag > 0) {
+    fprintf(stderr,"bounds: pts: %d\n",i);
+  }
+ 
   /* This is for the GMT compatibility. More can be done here.
    */
   if (gmtflag == 0) {
@@ -385,6 +389,9 @@ main (int argc, char **argv) {
     /* The distance parameter can't be less than zero */
     if (dist > 0) block_pts(pnts, npr, dist, verbose_flag);
   }
-  free(pnts), fclose(fp);
+  fprintf(stderr, "bounds: done");
+  free(pnts);
+  pnts=NULL;
+  fclose(fp);
   exit(1);
 }

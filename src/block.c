@@ -35,7 +35,7 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
   int xsize = fabs((xyzi.xmax - xyzi.xmin) / inc) + 1;
   /* `xys` is the size of the bbarray array, this has to be large enough
    to hold all 4 sides of every point in the grid. */
-  int xys = (xsize*ysize)*4;
+  ssize_t xys = (xsize*ysize)*4;
   
   if (vflag > 0) {
     fprintf(stderr,"bounds: Size of internal grid: %d/%d\n",ysize,xsize);
@@ -51,9 +51,11 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
     exit(EXIT_FAILURE);
   }
 
-  //fprintf(stderr,"bounds: Initializing bbarray with a value of %d\n",xys);
+  if (vflag > 0) {
+    fprintf(stderr,"bounds: Initializing bbarray with a value of %d\n",xys);
+  }
   line_t *bbarray;
-  bbarray = (line_t *)malloc(sizeof(line_t)*xys);
+  bbarray = (line_t *) malloc(sizeof(line_t)*xys);
 
   if (!bbarray) {
     fprintf(stderr,"bounds: Failed to allocate needed memory, try increasing the distance value (%f)\n",inc);
@@ -103,31 +105,39 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
     }
   }
 
-  /* Free allocated grid 'blockarray' from memory */
-  for (i = 0; i < ysize; i++) free(blockarray[i]);
+  for (i = 0; i < ysize; i++) {
+    free(blockarray[i]);
+    blockarray[i]=NULL;
+  }
   free(blockarray);
-
+  blockarray=NULL;
+  //fprintf(stderr,"bounds: Freed blockarray\n");
+  
   //fprintf(stderr,"bounds: grid edges recorded and blockarray freed\n");
+
+  //fprintf(stderr,"bounds: bb = %d, %d\n", bb, );
+  point_t* bnds;  
+  bnds = (point_t*) malloc(sizeof(point_t) * bb);
 
   /* Sort the edge lines into polygons */
   while (bb >= 4) {
     /* Do for each polygon...finishes (done == 1) when finds a matching point. */
     while (done == 0) {
       if (bcount == 0) {
-	points[0] = bbarray[bb-1].p1, points[1] = bbarray[bb-1].p2;
+	bnds[0] = bbarray[bb-1].p1, bnds[1] = bbarray[bb-1].p2;
 	bcount=2, bb--;
       }
       for (edge = 0; edge < bb; edge++) {
-	if (fabs( points[bcount-1].x - bbarray[edge].p1.x ) < FLT_EPSILON && fabs( points[bcount-1].y - bbarray[edge].p1.y) < FLT_EPSILON ) {
-	  if (fabs( points[0].x - bbarray[edge].p2.x) < FLT_EPSILON && fabs (points[0].y - bbarray[edge].p2.y) < FLT_EPSILON) l = 1;
-	  points[bcount] = bbarray[edge].p2;
+	if (fabs( bnds[bcount-1].x - bbarray[edge].p1.x ) < FLT_EPSILON && fabs( bnds[bcount-1].y - bbarray[edge].p1.y) < FLT_EPSILON ) {
+	  if (fabs( bnds[0].x - bbarray[edge].p2.x) < FLT_EPSILON && fabs (bnds[0].y - bbarray[edge].p2.y) < FLT_EPSILON) l = 1;
+	  bnds[bcount] = bbarray[edge].p2;
 	  bbarray[edge] = bbarray[bb-1];
 	  bb--, bcount++, done = l;
 	  break;
 	}
-	if (fabs (points[bcount-1].x - bbarray[edge].p2.x) < FLT_EPSILON && fabs (points[bcount-1].y - bbarray[edge].p2.y) < FLT_EPSILON) {
-	  if (fabs (points[0].x - bbarray[edge].p1.x) < FLT_EPSILON && fabs (points[0].y - bbarray[edge].p1.y) < FLT_EPSILON) l = 1;
-	  points[bcount] = bbarray[edge].p1;
+	if (fabs (bnds[bcount-1].x - bbarray[edge].p2.x) < FLT_EPSILON && fabs (bnds[bcount-1].y - bbarray[edge].p2.y) < FLT_EPSILON) {
+	  if (fabs (bnds[0].x - bbarray[edge].p1.x) < FLT_EPSILON && fabs (bnds[0].y - bbarray[edge].p1.y) < FLT_EPSILON) l = 1;
+	  bnds[bcount] = bbarray[edge].p1;
 	  bbarray[edge] = bbarray[bb-1];  
 	  bb--, bcount++, done = l;
 	  break;
@@ -137,7 +147,7 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
 
     /* Print out the polygon */
     for (edge = 0; edge < bcount; edge++) {
-      printf("%f %f\n", points[edge].x, points[edge].y);
+      printf("%f %f\n", bnds[edge].x, bnds[edge].y);
     }
 
     /* Reset some values */
@@ -149,9 +159,12 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
   if (vflag > 0) {
     fprintf(stderr,"bounds: Found %d total boundary points\n", fcount);
   }
-  
+
   /* Free allocated grid bbarray from memory */
   free(bbarray);
+  bbarray=NULL;
+  free(bnds);
+  bnds=NULL;
   //fprintf(stderr,"bounds: Freed bbarray\n");
   
   return(1);  
