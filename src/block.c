@@ -111,11 +111,15 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
   }
   free(blockarray);
   blockarray=NULL;
-  //fprintf(stderr,"bounds: Freed blockarray\n");
   
-  //fprintf(stderr,"bounds: grid edges recorded and blockarray freed\n");
+  if (vflag > 0) {
+    fprintf(stderr,"bounds: grid edges recorded and blockarray freed\n");
+  }
 
-  //fprintf(stderr,"bounds: bb = %d, %d\n", bb, );
+  /* Allocate memory for the edge points. 
+     There may be more boundary points than input points, 
+     so a new array is used. 
+  */
   point_t* bnds;  
   bnds = (point_t*) malloc(sizeof(point_t) * bb);
 

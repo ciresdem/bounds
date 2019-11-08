@@ -389,9 +389,13 @@ main (int argc, char **argv) {
     /* The distance parameter can't be less than zero */
     if (dist > 0) block_pts(pnts, npr, dist, verbose_flag);
   }
-  fprintf(stderr, "bounds: done");
   free(pnts);
   pnts=NULL;
   fclose(fp);
+
+  if (verbose_flag > 0) {
+    fprintf(stderr, "bounds: done\n");
+  }
+
   exit(1);
 }
