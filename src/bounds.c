@@ -220,29 +220,25 @@ main (int argc, char **argv) {
 
   if (version_flag) print_version("bounds", BOUNDS_VERSION);
   if (help_flag) usage();
-  //if (inflag == 0 && optind >= argc) usage ();
 
   fn = argv[optind];
   if (fn) inflag++;
-  //if (inflag == 0) {
-  //fp = fopen(fn, "r");
+
   if (inflag > 0) {
     fp = fopen(fn, "r");
     if (!fp) {
-      fprintf(stderr,"bounds: Failed to open file: %s\n", fn);
-      exit(0);
+      if (verbose_flag > 0) fprintf(stderr,"bounds: Failed to open file: %s\n", fn);
+      exit(EXIT_FAILURE);
     }
   } else {
     fp = stdin;
     fn = "stdin";
   }
 
-  if (verbose_flag > 0) {
-    fprintf(stderr, "bounds: Working on file: %s\n", fn);
-  }
+  if (verbose_flag > 0) fprintf(stderr, "bounds: Working on file: %s\n", fn);
   
   /* Allocate memory for the `pnts` and `pnts2` array using the total number of points.
-   * `pnts2` is only used by concave.
+   * `pnts2` is only used by concave and gets allocated there.
    */
   point_t* pnts;  
   pnts = (point_t*) malloc(sizeof(point_t));
@@ -261,9 +257,7 @@ main (int argc, char **argv) {
     }
   }
 
-  if (verbose_flag > 0) {
-    fprintf(stderr,"bounds: pts: %d\n",i);
-  }
+  if (verbose_flag > 0) fprintf(stderr,"bounds: pts: %d\n",i);
  
   /* This is for the GMT compatibility. More can be done here.
    */
@@ -285,9 +279,7 @@ main (int argc, char **argv) {
     for (i = 0; i < hullsize; i++)
       printf("%f %f\n", hull[i]->x, hull[i]->y);
     
-    if (verbose_flag > 0) {
-      fprintf(stderr, "bounds: Found %d convex boundary points.\n", hullsize);
-    }
+    if (verbose_flag > 0) fprintf(stderr, "bounds: Found %d convex boundary points.\n", hullsize);
   }
   
   /* 
@@ -299,9 +291,7 @@ main (int argc, char **argv) {
     for (i = 0; i < hullsize; i++)
       printf("%f %f\n", pnts[i].x, pnts[i].y);
     
-    if (verbose_flag > 0) {
-      fprintf(stderr, "bounds: Found %d convex boundary points.\n", hullsize);
-    }
+    if (verbose_flag > 0) fprintf(stderr, "bounds: Found %d convex boundary points.\n", hullsize);
   }
   
   /* 
@@ -389,13 +379,12 @@ main (int argc, char **argv) {
     /* The distance parameter can't be less than zero */
     if (dist > 0) block_pts(pnts, npr, dist, verbose_flag);
   }
+
   free(pnts);
   pnts=NULL;
   fclose(fp);
 
-  if (verbose_flag > 0) {
-    fprintf(stderr, "bounds: done\n");
-  }
+  if (verbose_flag > 0) fprintf(stderr, "bounds: done\n");
 
   exit(1);
 }

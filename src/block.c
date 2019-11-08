@@ -37,9 +37,8 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
    to hold all 4 sides of every point in the grid. */
   ssize_t xys = (xsize*ysize)*4;
   
-  if (vflag > 0) {
-    fprintf(stderr,"bounds: Size of internal grid: %d/%d\n",ysize,xsize);
-  }
+  if (vflag > 0) fprintf(stderr,"bounds: Size of internal grid: %d/%d\n",ysize,xsize);
+
 
   /* Allocate memory for arrays */  
   int** blockarray;
@@ -47,23 +46,20 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
   for (i = 0; i < ysize; i++) blockarray[i] = (int*) malloc(xsize * sizeof(int));  
   
   if (!blockarray){
-    fprintf(stderr,"bounds: Failed to allocate needed memory, try increasing the distance value (%f)\n",inc);
+    if (vflag > 0) fprintf(stderr,"bounds: Failed to allocate needed memory, try increasing the distance value (%f)\n",inc);
     exit(EXIT_FAILURE);
   }
 
-  if (vflag > 0) {
-    fprintf(stderr,"bounds: Initializing bbarray with a value of %d\n",xys);
-  }
+  if (vflag > 0) fprintf(stderr,"bounds: Initializing bbarray with a value of %d\n",xys);
+
   line_t *bbarray;
   bbarray = (line_t *) malloc(sizeof(line_t)*xys);
 
   if (!bbarray) {
-    fprintf(stderr,"bounds: Failed to allocate needed memory, try increasing the distance value (%f)\n",inc);
+    if (vflag > 0) fprintf(stderr,"bounds: Failed to allocate needed memory, try increasing the distance value (%f)\n",inc);
     exit(EXIT_FAILURE);
   }
 
-  //fprintf(stderr,"bounds: bbarray Initialized\n");
-  
   /* Loop through the point records and grid them */
   for (i = 0; i < npoints; i++) {
     xpos = fabs((points[i].x - xyzi.xmin) / inc);
@@ -71,7 +67,7 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
     blockarray[ypos][xpos] = 1;
   }
 
-  //fprintf(stderr,"bounds: points gridded\n");
+  if (vflag > 0) fprintf(stderr,"bounds: points gridded\n");
   
   /* Loop through the grid and find and record the edge lines */
   for (i = 0; i < ysize; i++) {
@@ -112,9 +108,7 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
   free(blockarray);
   blockarray=NULL;
   
-  if (vflag > 0) {
-    fprintf(stderr,"bounds: grid edges recorded and blockarray freed\n");
-  }
+  if (vflag > 0) fprintf(stderr,"bounds: grid edges recorded and blockarray freed\n");
 
   /* Allocate memory for the edge points. 
      There may be more boundary points than input points, 
@@ -160,16 +154,13 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
     if (bb >= 4) printf(">\n");
   }
   
-  if (vflag > 0) {
-    fprintf(stderr,"bounds: Found %d total boundary points\n", fcount);
-  }
+  if (vflag > 0) fprintf(stderr,"bounds: Found %d total boundary points\n", fcount);
 
   /* Free allocated grid bbarray from memory */
   free(bbarray);
   bbarray=NULL;
   free(bnds);
   bnds=NULL;
-  //fprintf(stderr,"bounds: Freed bbarray\n");
   
   return(1);  
 }
