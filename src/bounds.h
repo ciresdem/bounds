@@ -129,6 +129,6 @@ pw_convex(point_t* points, ssize_t npoints);
  * as the input points.
  */
 int
-block_pts(point_t* points, int npoints, double inc, int vflag);
+block_pts(point_t* points, int npoints, double inc, xyz_info region, int vflag);
 
 // End

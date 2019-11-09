@@ -14,12 +14,24 @@
 
 #include "bounds.h"
 
+int
+pnts_equal_p(point_t p1, point_t p2){
+  return fabs( p1.x - p2.x ) < FLT_EPSILON && fabs( p1.y - p2.y ) < FLT_EPSILON;
+}
+
+int
+xyz_info_valid_p(xyz_info *region) {
+  if (region->xmin >= region->xmax) return 0;
+  if (region->ymin >= region->ymax) return 0;
+  return 1;
+}
+
 /* 
  * "Bounding Block"
  * Generates a grid at `inc` cell-size and polygonizes it.
  */
 int
-block_pts(point_t* points, int npoints, double inc, int vflag) {
+block_pts(point_t* points, int npoints, double inc, xyz_info region, int vflag) {
 
   int i, j, xpos, ypos, edge;
   int bb = 0, done = 0, bcount = 0, l = 0, fcount = 0;
@@ -28,7 +40,12 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
 
   /* Gather xyzinfo */
   xyz_info xyzi;
-  minmax(points, npoints, &xyzi);
+
+  if (xyz_info_valid_p(&region)) {
+    xyzi = region;
+  } else {
+    minmax(points, npoints, &xyzi);
+  }
 
   /* Set the rows and columns of the internal grid */
   int ysize = fabs((xyzi.ymax - xyzi.ymin) / inc) + 1;
@@ -38,7 +55,6 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
   ssize_t xys = (xsize*ysize)*4;
   
   if (vflag > 0) fprintf(stderr,"bounds: Size of internal grid: %d/%d\n",ysize,xsize);
-
 
   /* Allocate memory for arrays */  
   int** blockarray;
@@ -60,11 +76,13 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
     exit(EXIT_FAILURE);
   }
 
+  if (vflag > 0) fprintf(stderr,"bounds: Gridding points\n");
+
   /* Loop through the point records and grid them */
   for (i = 0; i < npoints; i++) {
     xpos = fabs((points[i].x - xyzi.xmin) / inc);
     ypos = fabs((points[i].y - xyzi.ymin) / inc);
-    blockarray[ypos][xpos] = 1;
+    if (xpos < xsize && ypos < ysize) blockarray[ypos][xpos] = 1;
   }
 
   if (vflag > 0) fprintf(stderr,"bounds: points gridded\n");
@@ -113,11 +131,12 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
   /* Allocate memory for the edge points. 
      There may be more boundary points than input points, 
      so a new array is used. 
+     Add one to the point count to repeat the first point.
   */
   point_t* bnds;  
   bnds = (point_t*) malloc(sizeof(point_t) * (bb+1));
 
-  if (vflag > 0) fprintf(stderr,"bounds: sorting %d points\n", bb);
+  if (vflag > 0) fprintf(stderr,"bounds: sorting %d points into boundary\n", bb);
 
   /* Sort the edge lines into polygons */
   while (bb >= 4) {
@@ -128,15 +147,15 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
 	bcount=2, bb--;
       }
       for (edge = 0; edge < bb; edge++) {
-	if (fabs( bnds[bcount-1].x - bbarray[edge].p1.x ) < FLT_EPSILON && fabs( bnds[bcount-1].y - bbarray[edge].p1.y) < FLT_EPSILON ) {
-	  if (fabs( bnds[0].x - bbarray[edge].p2.x) < FLT_EPSILON && fabs (bnds[0].y - bbarray[edge].p2.y) < FLT_EPSILON) l = 1;
+	if (pnts_equal_p( bnds[bcount-1],  bbarray[edge].p1 )) {
+	  if (pnts_equal_p( bnds[0], bbarray[edge].p2 )) l = 1;
 	  bnds[bcount] = bbarray[edge].p2;
 	  bbarray[edge] = bbarray[bb-1];
 	  bb--, bcount++, done = l;
 	  break;
 	}
-	if (fabs (bnds[bcount-1].x - bbarray[edge].p2.x) < FLT_EPSILON && fabs (bnds[bcount-1].y - bbarray[edge].p2.y) < FLT_EPSILON) {
-	  if (fabs (bnds[0].x - bbarray[edge].p1.x) < FLT_EPSILON && fabs (bnds[0].y - bbarray[edge].p1.y) < FLT_EPSILON) l = 1;
+	if (pnts_equal_p( bnds[bcount-1], bbarray[edge].p2 )) {
+	  if (pnts_equal_p( bnds[0], bbarray[edge].p1 )) l = 1;
 	  bnds[bcount] = bbarray[edge].p1;
 	  bbarray[edge] = bbarray[bb-1];  
 	  bb--, bcount++, done = l;

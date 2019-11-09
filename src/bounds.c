@@ -47,6 +47,7 @@ Generate a boundary of the set of xy points from FILE, or standard input, to sta
   ---- bounds ----\n\n\
   -b, --box\t\t'bounding box' boundary. \n\
   -k, --block\t\t'block' boundary. specify the blocking increment here. (e.g. --block 0.001)\n\
+             \t\tappend a region if desired (e.g. --block 0.001/west/east/south/north\n\
   -x, --convex\t\t'convex hull' boundary using a monotone chain algorithm. (default)\n\
   -v, --concave\t\t'concave hull' boundary using a distance weighted package wrap algorithm. \n\
                \t\tspecify the distance threshold here. (e.g. --concave 0.01)\n\
@@ -134,6 +135,7 @@ main (int argc, char **argv) {
 
   char* delim = " \t";
   char* ptrec = "xy";
+  char* kreg = "";
   char* lname = "bounds";
   
   while (1) {
@@ -197,7 +199,8 @@ main (int argc, char **argv) {
       break;
     case 'k':
       kflag++;
-      dist = atof(optarg);
+      kreg = optarg;
+      //dist = atof(optarg);
       break;
     case 'x':
       cflag++;
@@ -376,8 +379,24 @@ main (int argc, char **argv) {
    * Bounding Block - polygonize a grid of the points using `dist` cell-size
    */
   else if (kflag == 1) {
+    int kr_length;
+    xyz_info rgn;
+    kr_length = strlen(kreg);
+
+    char* p = strtok(kreg, "/");
+    for (j = 0; j < kr_length; j++) { 
+      if (p != NULL) {
+	if (j == 0) dist = atof(p);
+	if (j == 1) rgn.xmin = atof(p);
+	if (j == 2) rgn.xmax = atof(p);
+	if (j == 3) rgn.ymin = atof(p);
+	if (j == 4) rgn.ymax = atof(p);
+      }
+      p = strtok(NULL, "/");
+    }
+    
     /* The distance parameter can't be less than zero */
-    if (dist > 0) block_pts(pnts, npr, dist, verbose_flag);
+    if (dist > 0) block_pts(pnts, npr, dist, rgn, verbose_flag);
   }
 
   free(pnts);
