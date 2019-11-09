@@ -324,12 +324,12 @@ main (int argc, char **argv) {
        * If there are points still outside the boundary, increase the
        * distance and retry.
        */
-      if (hullsize >= 0)
-	for (i = hullsize; i < npr; i++)
-	  if (!inside(&pnts[i], pnts, hullsize, dist)) {
-	    hullsize = -1;
-	    break;
-	  }
+      /* if (hullsize >= 0) */
+      /* 	for (i = hullsize; i < npr; i++) */
+      /* 	  if (!inside(&pnts[i], pnts, hullsize, dist)) { */
+      /* 	    hullsize = -1; */
+      /* 	    break; */
+      /* 	  } */
       
       /* If a hull wasn't found, increase the `dist` and try again. */
       if (hullsize == -1) {

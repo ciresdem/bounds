@@ -3,7 +3,7 @@
  *
  * This file is part of BOUNDS
  *
- * Copyright (c) 2011, 2012 Matthew Love <matthew.love@colorado.edu>
+ * Copyright (c) 2011, 2012, 2018, 2019 Matthew Love <matthew.love@colorado.edu>
  * BOUNDS is liscensed under the GPL v.2 or later and 
  * is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -88,6 +88,9 @@ intersect(line_t l1, line_t l2, double thresh) {
   if (a < 0-thresh && b < 0-thresh) return 1;
   else if (a >= 0-thresh && a <= thresh) return 0;
   else if (b >= 0-thresh && b <= thresh) return 0;
+  /* if (fabs (a) < thresh && fabs(b) < thresh) return 1; */
+  /* else if (fabs (b) > thresh) return 0; */
+  /* else if (fabs (a) > thresh) return 0; */
   else return -1;
 }
 
@@ -161,25 +164,30 @@ dpw_concave(point_t* points, int npoints, double d) {
      */
     /* Re-insert the first point into the dataset */
     if (M > 10 || M > npoints*.1) points[npoints-1] = points[0];
+    //if (dist_euclid(&points[0], &points[M]) > d) points[npoints-1] = points[0];
  
     /* Loop through the remaining points and find the next concave point; 
        less than distance threshold -> less than working theta -> does not 
        intersect existing boundary */
     for (i = M + 1; i < npoints; i++)
-      if (dist_euclid(&points[M], &points[i]) <= d) {
+      if ((fabs(dist_euclid(&points[M], &points[i])) - d) < 0) {
+	//if (dist_euclid(&points[M], &points[i]) <= d) {
 	if (M == 0) cth = theta(&points[M], &points[i]);
 	else cth = atheta(&points[M], &points[i], &t0);
-	if (cth > 0  && cth < th) {
+	if (cth > 0 && cth < th) {
 	  /* Make sure the selected point doesn't create a line segment which
 	     intersects with the existing hull. */
+	  //fprintf(stderr,"bounds: dist:%f\n",dist_euclid(&points[M], &points[i]));
 	  if (M > 0)
 	    for (k = 0, j = 0; j < M; j++) {
 	      l1.p1 = points[M], l1.p2 = points[i];
 	      l2.p1 = points[j], l2.p2 = points[j+1];
-	      if (intersect(l1,l2,DBL_EPSILON) > 0) k++;
+	      if (intersectp(&l1.p1,&l1.p2,&l2.p1,&l2.p2) > 0) k++;
 	    }
 	  /* If all criteria are met,, add this point to the hull */
-	  if (k == 0) min = i, th = cth; 
+	  if (k == 0) {
+	    min = i, th = cth; 
+	  }
 	}
       }
 

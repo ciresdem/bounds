@@ -43,13 +43,14 @@ block_pts(point_t* points, int npoints, double inc, xyz_info region, int vflag) 
 
   if (xyz_info_valid_p(&region)) {
     xyzi = region;
+    if (vflag > 0) fprintf(stderr,"bounds: Using user supplied region: %f/%f/%f/%f\n",region.xmin,region.xmax,region.ymin,region.ymax);
   } else {
     minmax(points, npoints, &xyzi);
   }
 
   /* Set the rows and columns of the internal grid */
-  int ysize = fabs((xyzi.ymax - xyzi.ymin) / inc) + 1;
-  int xsize = fabs((xyzi.xmax - xyzi.xmin) / inc) + 1;
+  int ysize = fabs((xyzi.ymax - xyzi.ymin) / inc);
+  int xsize = fabs((xyzi.xmax - xyzi.xmin) / inc);
   /* `xys` is the size of the bbarray array, this has to be large enough
    to hold all 4 sides of every point in the grid. */
   ssize_t xys = (xsize*ysize)*4;
@@ -154,7 +155,7 @@ block_pts(point_t* points, int npoints, double inc, xyz_info region, int vflag) 
 	  bb--, bcount++, done = l;
 	  break;
 	}
-	if (pnts_equal_p( bnds[bcount-1], bbarray[edge].p2 )) {
+	else if (pnts_equal_p( bnds[bcount-1], bbarray[edge].p2 )) {
 	  if (pnts_equal_p( bnds[0], bbarray[edge].p1 )) l = 1;
 	  bnds[bcount] = bbarray[edge].p1;
 	  bbarray[edge] = bbarray[bb-1];  
@@ -170,7 +171,7 @@ block_pts(point_t* points, int npoints, double inc, xyz_info region, int vflag) 
     }
 
     /* Reset some values */
-    fcount = fcount + (bcount-1);
+    fcount = fcount + bcount;
     bcount = 0, done = 0, l = 0;
     if (bb >= 4) printf(">\n");
   }
