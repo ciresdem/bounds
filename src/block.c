@@ -115,7 +115,9 @@ block_pts(point_t* points, int npoints, double inc, int vflag) {
      so a new array is used. 
   */
   point_t* bnds;  
-  bnds = (point_t*) malloc(sizeof(point_t) * bb);
+  bnds = (point_t*) malloc(sizeof(point_t) * (bb+1));
+
+  if (vflag > 0) fprintf(stderr,"bounds: sorting %d points\n", bb);
 
   /* Sort the edge lines into polygons */
   while (bb >= 4) {
