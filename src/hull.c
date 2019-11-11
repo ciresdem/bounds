@@ -88,9 +88,6 @@ intersect(line_t l1, line_t l2, double thresh) {
   if (a < 0-thresh && b < 0-thresh) return 1;
   else if (a >= 0-thresh && a <= thresh) return 0;
   else if (b >= 0-thresh && b <= thresh) return 0;
-  /* if (fabs (a) < thresh && fabs(b) < thresh) return 1; */
-  /* else if (fabs (b) > thresh) return 0; */
-  /* else if (fabs (a) > thresh) return 0; */
   else return -1;
 }
 
@@ -99,15 +96,15 @@ intersect(line_t l1, line_t l2, double thresh) {
 static int
 intersectp(point_t* p1, point_t* p2, point_t* p3, point_t* p4) {
   float den = (p2->x - p1->x) * (p4->y - p3->y) - (p2->y - p1->y) * (p4->x - p3->x);
-
+  
   //if (fabs(den) < FLT_EPSILON) return 0; // parallel lines
   if (!den) return 0; // parallel lines
 
   float a = ((p3->x - p1->x) * (p4->y - p3->y) - (p3->y - p1->y) * (p4->x - p3->x)) / den;
-  if (a <= FLT_EPSILON  || a >= 1.0) return 0; // intersection point not between p1 and p2
+  if (a <= 0  || a > 1.0) return 0; // intersection point not between p1 and p2
 
   a = ((p3->x - p1->x) * (p2->y - p1->y) - (p3->y - p1->y) * (p2->x - p1->x)) / den;
-  if (a <= FLT_EPSILON || a >= 1.0) return 0; // intersection point not between p3 and p4
+  if (a <= 0 || a > 1.0) return 0; // intersection point not between p3 and p4
 
   return 1;
 }
@@ -120,14 +117,13 @@ inside(point_t* p1, point_t* poly, ssize_t hullsize, double dist) {
   point_t p2;
   line_t lt, lp;
 
-  p2.y = p1->y, p2.x = INT_MAX;
+  p2.y = p1->y, p2.x = FLT_MAX;
   lt.p1 = *p1, lt.p2 = p2;
   
   for (i = 0; i < hullsize; i++) {
     lp.p1 = poly[i], lp.p2 = poly[i+1];
 
     l = intersect(lt,lp,FLT_EPSILON*dist);
-
     if (l == 0) return 1;
     if (l == 1) k++;
   }
@@ -142,7 +138,7 @@ inside(point_t* p1, point_t* poly, ssize_t hullsize, double dist) {
  */
 ssize_t
 dpw_concave(point_t* points, int npoints, double d) {
-  int i, min, M, k, j, fp=0;
+  int i, min, l, M, k, j, fp=0;
   float th, cth;
   point_t t, t0;
   line_t l1, l2;
@@ -171,7 +167,6 @@ dpw_concave(point_t* points, int npoints, double d) {
        intersect existing boundary */
     for (i = M + 1; i < npoints; i++)
       if ((fabs(dist_euclid(&points[M], &points[i])) - d) < 0) {
-	//if (dist_euclid(&points[M], &points[i]) <= d) {
 	if (M == 0) cth = theta(&points[M], &points[i]);
 	else cth = atheta(&points[M], &points[i], &t0);
 	if (cth > 0 && cth < th) {
@@ -182,6 +177,7 @@ dpw_concave(point_t* points, int npoints, double d) {
 	    for (k = 0, j = 0; j < M; j++) {
 	      l1.p1 = points[M], l1.p2 = points[i];
 	      l2.p1 = points[j], l2.p2 = points[j+1];
+	      //if (intersect(l1,l2,FLT_EPSILON) == 1) k++;
 	      if (intersectp(&l1.p1,&l1.p2,&l2.p1,&l2.p2) > 0) k++;
 	    }
 	  /* If all criteria are met,, add this point to the hull */

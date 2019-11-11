@@ -321,16 +321,20 @@ main (int argc, char **argv) {
       hullsize = dpw_concave(pnts, npr, dist);
       
       /* If a hull was found, check that it gathered all the points.
+       * We want to have a 'hull' in that the output contains all points
+       * within the boundary polygon. Otherwise instead of increasing
+       * the boundary we could run on outside points to output a 
+       * multipolygon.
        * If there are points still outside the boundary, increase the
        * distance and retry.
        */
-      /* if (hullsize >= 0) */
-      /* 	for (i = hullsize; i < npr; i++) */
-      /* 	  if (!inside(&pnts[i], pnts, hullsize, dist)) { */
-      /* 	    hullsize = -1; */
-      /* 	    break; */
-      /* 	  } */
-      
+      if (hullsize >= 0)
+      	for (i = hullsize; i < npr; i++)
+      	  if (!inside(&pnts[i], pnts, hullsize, dist)) {
+      	    hullsize = -1;
+      	    break;
+      	  }
+
       /* If a hull wasn't found, increase the `dist` and try again. */
       if (hullsize == -1) {
 	dist = dist + (dist * 0.1), pc++;
