@@ -23,6 +23,7 @@ Generate a boundary of the set of xy points from FILE, or standard input, to sta
 
   -b, --box             'bounding box' boundary.
   -k, --block           'block' boundary. specify the blocking increment here. (e.g. --block 0.001)
+                        append a region if desired (e.g. --block 0.001/west/east/south/north
   -x, --convex          'convex hull' boundary using a monotone chain algorithm. (default)
   -v, --concave         'concave hull' boundary using a distance weighted package wrap algorithm.
                         specify the distance threshold here. (e.g. --concave 0.01)
