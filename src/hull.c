@@ -138,7 +138,7 @@ inside(point_t* p1, point_t* poly, ssize_t hullsize, double dist) {
  */
 ssize_t
 dpw_concave(point_t* points, int npoints, double d) {
-  int i, min, l, M, k, j, fp=0;
+  int i, min, M, k, j;
   float th, cth;
   point_t t, t0;
   line_t l1, l2;
@@ -155,9 +155,6 @@ dpw_concave(point_t* points, int npoints, double d) {
     /* Set the previous point for angle calculations */
     if (M > 0) t0 = points[M - 1];
 
-    /* 
-     *  !! Need a better way to re-insert first point !! 
-     */
     /* Re-insert the first point into the dataset */
     if (M > 10 || M > npoints*.1) points[npoints-1] = points[0];
     //if (dist_euclid(&points[0], &points[M]) > d) points[npoints-1] = points[0];
@@ -165,28 +162,24 @@ dpw_concave(point_t* points, int npoints, double d) {
     /* Loop through the remaining points and find the next concave point; 
        less than distance threshold -> less than working theta -> does not 
        intersect existing boundary */
-    for (i = M + 1; i < npoints; i++)
-      if ((fabs(dist_euclid(&points[M], &points[i])) - d) < 0) {
+    for (i = M + 1; i < npoints; i++) {
+      if (dist_euclid(&points[M], &points[i]) < d) {
 	if (M == 0) cth = theta(&points[M], &points[i]);
 	else cth = atheta(&points[M], &points[i], &t0);
-	if (cth > 0 && cth < th) {
+	if (cth > 0 && cth <= th) {
 	  /* Make sure the selected point doesn't create a line segment which
 	     intersects with the existing hull. */
-	  //fprintf(stderr,"bounds: dist:%f\n",dist_euclid(&points[M], &points[i]));
 	  if (M > 0)
 	    for (k = 0, j = 0; j < M; j++) {
 	      l1.p1 = points[M], l1.p2 = points[i];
 	      l2.p1 = points[j], l2.p2 = points[j+1];
-	      //if (intersect(l1,l2,FLT_EPSILON) == 1) k++;
 	      if (intersectp(&l1.p1,&l1.p2,&l2.p1,&l2.p2) > 0) k++;
 	    }
 	  /* If all criteria are met,, add this point to the hull */
-	  if (k == 0) {
-	    min = i, th = cth; 
-	  }
+	  if (k == 0) min = i, th = cth; 
 	}
       }
-
+    }
     /* No point was found, try again with a larger distance threshhold. */
     if (min == -1) return min;
 

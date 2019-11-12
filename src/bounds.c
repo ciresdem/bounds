@@ -331,13 +331,14 @@ main (int argc, char **argv) {
       if (hullsize >= 0)
       	for (i = hullsize; i < npr; i++)
       	  if (!inside(&pnts[i], pnts, hullsize, dist)) {
+      	    if (verbose_flag > 0) fprintf(stderr,"bounds: Failed to gather all points");
       	    hullsize = -1;
       	    break;
       	  }
 
       /* If a hull wasn't found, increase the `dist` and try again. */
       if (hullsize == -1) {
-	dist = dist + (dist * 0.1), pc++;
+	dist = dist + (dist * 0.25), pc++;
 	memcpy(pnts, pnts2, sizeof(point_t)*npr);
 	if (verbose_flag > 0) {
 	  fprintf(stderr,"\rbounds: Increasing distance ( %f )",dist);
@@ -351,7 +352,7 @@ main (int argc, char **argv) {
 
     /* Print out the hull */
     for (i = 0; i <= hullsize; i++)
-      printf("%.7f %.7f\n", pnts[i].x, pnts[i].y);
+      printf("%f %f\n", pnts[i].x, pnts[i].y);
     
     if (verbose_flag > 0) {
       if (pc > 0) fprintf(stderr,"\n");
