@@ -427,10 +427,14 @@ main (int argc, char **argv)
       /* Find the extent values in the dataset */
       for (ymin = 0, ymax = 0, xmin = 0, xmax = 0, i = 1; i < npr; i++) 
 	{
-	  if (pnts[i].y < pnts[ymin].y) ymin = i;
-	  if (pnts[i].x < pnts[xmin].x) xmin = i;
-	  if (pnts[i].y > pnts[ymax].y) ymax = i;
-	  if (pnts[i].x > pnts[xmax].x) xmax = i;
+	  if (pnts[i].y < pnts[ymin].y) 
+	    ymin = i;
+	  if (pnts[i].x < pnts[xmin].x) 
+	    xmin = i;
+	  if (pnts[i].y > pnts[ymax].y) 
+	    ymax = i;
+	  if (pnts[i].x > pnts[xmax].x) 
+	    xmax = i;
 	}
       printf ("%f %f\n", pnts[xmin].x, pnts[ymin].y);
       printf ("%f %f\n", pnts[xmin].x, pnts[ymax].y);
