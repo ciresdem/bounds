@@ -312,9 +312,8 @@ main (int argc, char **argv)
   /* This is for the GMT compatibility. More can be done here.
    */
   if (gmtflag == 0) 
-    {
       printf ("# @VGMT1.0 @GMULTIPOLYGON\n# @NName\n# @Tstring\n# FEATURE_DATA\n");
-    }
+
   printf (">\n# @D%s\n# @P\n", lname);
     
   /* The default is a convex hull -- `cflag` */
