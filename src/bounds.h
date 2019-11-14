@@ -33,65 +33,84 @@
 #define NAN (0.0 / 0.0)
 #endif 
 
-typedef struct {
+typedef struct 
+{
   double x;
   double y;
 } point_t;
  
 typedef point_t* point_ptr_t;
 
-typedef struct {
+typedef struct 
+{
   point_t p1, p2;
 } line_t;
 
 typedef line_t* line_ptr_t;
 
-typedef struct {
-  double xmax;
-  double ymax;
+typedef struct 
+{
+  point_t p1;
+  point_t p2;
+  int xi;
+  int yi;
+} edge_t;
+
+typedef edge_t* edge_ptr_t;
+
+typedef struct 
+{
   double xmin;
+  double xmax;
   double ymin;
-} xyz_info;
+  double ymax;
+} region_t;
 
 /* Line-Count 
  */
 ssize_t
-linecnt(FILE *in);
+linecnt (FILE *in);
 
 /* Scan an xyz line and attempt to determine the delimiter and record length 
  */
 int
-scanline(char* infile);
+scanline (char* infile);
 
 /* Read a point record from the given infile
  */
 int
-read_point(FILE *infile, point_t *rpnt, char* delimiter, char* pnt_recr);
+read_point (FILE *infile, point_t *rpnt, char* delimiter, char* pnt_recr);
 
 void
-minmax(point_t* points, int npoints, xyz_info *xyzi);
+minmax (point_t* points, int npoints, region_t *xyzi);
+
+int
+pnts_equal_p (point_t p1, point_t p2);
+
+int
+region_valid_p (region_t *region);
 
 /* Get the euclidean distance between p1 and p2 in meters
  */
 static float
-dist_euclid(point_t* p1, point_t* p2);
+dist_euclid (point_t* p1, point_t* p2);
 
 /* Calculate the angle between two points, from the previous point
  * p1 = current point, p2 = next point, p0 = previous point
  */
 static float
-atheta(point_t* p1, point_t* p2, point_t* p0);
+atheta (point_t* p1, point_t* p2, point_t* p0);
 
 static float
-atheta_degrees(point_t p1, point_t p2, point_t p0);
+atheta_degrees (point_t p1, point_t p2, point_t p0);
 
 /* Return the angle between the two given points 
  */
 static float
-theta(point_t* p1, point_t* p2);
+theta (point_t* p1, point_t* p2);
 
 static float
-theta_degrees(point_t* p1, point_t* p2);
+theta_degrees (point_t* p1, point_t* p2);
 
 /* Return 1 if l1 and l2 intersect, -1 if they don't
  */
@@ -101,7 +120,7 @@ intersect(line_t l1, line_t l2, double thresh);
 /* Return 1 if p1 is inside poly
  */
 int
-inside(point_t* p1, point_t* poly, ssize_t hullsize, double dist);
+inside (point_t* p1, point_t* poly, ssize_t hullsize, double dist);
 
 /* A 'package-wrap' concavehull 
  * -- Retruns the number of points in the boundary;
@@ -109,26 +128,26 @@ inside(point_t* p1, point_t* poly, ssize_t hullsize, double dist);
  * Generate the concave hull using the given distance threshold
  */
 ssize_t
-dpw_concave(point_t* points, int npoints, double d);
+dpw_concave (point_t* points, int npoints, double d);
 
 /* Returns a list of points on the convex hull in counter-clockwise order.
  * Note: the last point in the returned list is the same as the first one. 
  */
 void
-mc_convex(point_t* points, ssize_t npoints, point_ptr_t** out_hull, ssize_t* out_hullsize);
+mc_convex (point_t* points, ssize_t npoints, point_ptr_t** out_hull, ssize_t* out_hullsize);
 
 /* A 'package-wrap' convexhull 
  * -- Retruns the number of points in the hull;
  * The hull makes up the begining of the points array.
  */
 ssize_t
-pw_convex(point_t* points, ssize_t npoints);
+pw_convex (point_t* points, ssize_t npoints);
 
 /* Generate a boundary with blocks
  * `inc` is the blocksize in the same units
  * as the input points.
  */
 int
-block_pts(point_t* points, int npoints, double inc, xyz_info region, int vflag);
+bbe_block (point_t* points, int npoints, double inc, region_t region, int vflag);
 
 // End
