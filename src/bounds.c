@@ -409,11 +409,12 @@ main (int argc, char **argv)
       for (i = 0; i <= hullsize; i++)
 	printf ("%f %f\n", pnts[i].x, pnts[i].y);
       
-      if (verbose_flag > 0) {
-	if (pc > 0) 
-	  fprintf (stderr,"\n");
-	fprintf (stderr, "bounds: Found %d concave boundary points at a %.6f distance threshhold.\n", hullsize, dist);
-      }
+      if (verbose_flag > 0) 
+	{
+	  if (pc > 0) 
+	    fprintf (stderr,"\n");
+	  fprintf (stderr, "bounds: Found %d concave boundary points at a %.6f distance threshhold.\n", hullsize, dist);
+	}
       free (pnts2);
       pnts2 = NULL;
   }
