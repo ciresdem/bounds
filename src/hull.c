@@ -168,7 +168,8 @@ dpw_concave (point_t* points, int npoints, double d)
 
   /* Find the minimum y value in the dataset */
   for (min = 0, i = 1; i < npoints-1; i++)
-    if (points[i].y < points[min].y) min = i;
+    if (points[i].y < points[min].y) 
+      min = i;
 
   /* Loop through all the points, starting with the point found above. */
   for (M = 0; M < npoints; M++) 
@@ -279,7 +280,7 @@ pw_convex (point_t* points, ssize_t npoints)
       points[min] = t, min = npoints; 
       v = th, th = 2 * M_PI;
       
-      for (i = M+1; i <= npoints; i++) 
+      for (i = M + 1; i <= npoints; i++) 
 	{
 	  cth = theta(&points[M], &points[i]);
 	  if (cth > v)
