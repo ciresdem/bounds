@@ -130,7 +130,6 @@ intersectp (point_t* p1, point_t* p2, point_t* p3, point_t* p4)
 int
 inside (point_t* p1, point_t* poly, ssize_t hullsize, double dist) 
 {
-
   int k = 0, l, l1;
   ssize_t i;
   point_t p2;
