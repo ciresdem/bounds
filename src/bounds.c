@@ -452,11 +452,16 @@ main (int argc, char **argv)
 	{ 
 	  if (p != NULL) 
 	    {
-	      if (j == 0) dist = atof (p);
-	      if (j == 1) rgn.xmin = atof (p);
-	      if (j == 2) rgn.xmax = atof (p);
-	      if (j == 3) rgn.ymin = atof (p);
-	      if (j == 4) rgn.ymax = atof (p);
+	      if (j == 0) 
+		dist = atof (p);
+	      if (j == 1) 
+		rgn.xmin = atof (p);
+	      if (j == 2) 
+		rgn.xmax = atof (p);
+	      if (j == 3) 
+		rgn.ymin = atof (p);
+	      if (j == 4) 
+		rgn.ymax = atof (p);
 	    }
 	  p = strtok (NULL, "/");
 	}
