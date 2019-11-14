@@ -115,7 +115,7 @@ theta_degrees (point_t* p1, point_t* p2);
 /* Return 1 if l1 and l2 intersect, -1 if they don't
  */
 int
-intersect(line_t l1, line_t l2, double thresh);
+intersect (line_t l1, line_t l2, double thresh);
 
 /* Return 1 if p1 is inside poly
  */
