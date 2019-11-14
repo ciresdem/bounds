@@ -38,12 +38,13 @@ scanline (char* infile)
   int c, count;
 
   count = 0;
-  for (;;) {
-    c = fgetc (in);
-    if (c == EOF || c == '\n') 
-      break;
-    ++count;
-  }
+  for (;;) 
+    {
+      c = fgetc (in);
+      if (c == EOF || c == '\n') 
+	break;
+      ++count;
+    }
   return count;
 }
 
