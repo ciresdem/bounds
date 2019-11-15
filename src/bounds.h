@@ -20,7 +20,7 @@
 #include <float.h>
 #include <limits.h>
 
-#define BOUNDS_VERSION "0.5.0"
+#define BOUNDS_VERSION "0.5.2"
 
 #define MAX_RECORD_LENGTH 1024
 #define MAX_HULLS 100000
