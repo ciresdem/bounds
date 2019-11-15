@@ -415,9 +415,7 @@ main (int argc, char **argv)
       
       if (verbose_flag > 0) 
 	{
-	  if (pc > 0) 
-	    fprintf (stderr,"\n");
-	  fprintf (stderr, "bounds: Found %d concave boundary points at a %.6f distance threshhold.\n", hullsize, dist);
+	  fprintf (stderr, "\nbounds: Found %d concave boundary points at a %.6f distance threshhold.\n", hullsize, dist);
 	}
       free (pnts2);
       pnts2 = NULL;
