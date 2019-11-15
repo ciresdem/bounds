@@ -60,6 +60,16 @@ typedef edge_t* edge_ptr_t;
 
 typedef struct 
 {
+  int b;
+  int t;
+  int l;
+  int r;
+} g_edges_t;
+
+typedef g_edges_t* g_edges_ptr_t;
+
+typedef struct 
+{
   double xmin;
   double xmax;
   double ymin;
@@ -149,5 +159,8 @@ pw_convex (point_t* points, ssize_t npoints);
  */
 int
 bbe_block (point_t* points, int npoints, double inc, region_t region, int vflag);
+
+int
+bbp_block (point_t* points, int npoints, double inc, region_t region, int vflag);
 
 // End

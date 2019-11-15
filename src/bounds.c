@@ -473,7 +473,8 @@ main (int argc, char **argv)
       
       /* The distance parameter can't be less than zero */
       if (dist > 0) 
-	bbe_block (pnts, npr, dist, rgn, verbose_flag);
+	bbp_block (pnts, npr, dist, rgn, verbose_flag);
+      //bbe_block (pnts, npr, dist, rgn, verbose_flag);
     }
 
   free (pnts);
