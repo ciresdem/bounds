@@ -49,6 +49,8 @@ pnts_equal_p (point_t p1, point_t p2)
   return 1;
 }
 
+/* Return 1 if `val` is is between `min` and `max`
+ */
 int
 int_in_range (int val, int min, int max) 
 {
@@ -59,7 +61,8 @@ int_in_range (int val, int min, int max)
   return 1;
 }
 
-
+/* Return 0 if `val` is less than zero, else return `val`
+ */
 int
 int_or_zero (int val) 
 {
@@ -67,6 +70,8 @@ int_or_zero (int val)
   else return val;
 }
 
+/* Return `max` if `val` is greater than `max`, else return `val`
+ */
 int
 int_or_max (int val, int vmax) 
 {
@@ -74,6 +79,8 @@ int_or_max (int val, int vmax)
   else return val;
 }
 
+/* Return a point based on cell location, increment and region (of a grid array)
+ */
 point_t
 pixel_to_point (int xi, int yi, double inc, region_t xyi)
 {
@@ -83,6 +90,8 @@ pixel_to_point (int xi, int yi, double inc, region_t xyi)
   return p1;
 }
 
+/* Return 1 if `ge` contains an edge
+ */
 int
 g_edges_p (g_edges_t ge)
 {
@@ -98,6 +107,8 @@ g_edges_p (g_edges_t ge)
     return 0;
 }
 
+/* Return 1 if point `p1` equals point `p2` and return 2 if `p1` equals point `p3`, else return 0 (no match).
+ */
 int
 pl_match (point_t p1, point_t p2, point_t p3)
 {
@@ -326,6 +337,9 @@ bbe_block (point_t* points, int npoints, double inc, region_t region, int vflag)
   return (1);  
 }
 
+/* "Bounding Block"
+ * Generates a grid at `inc` cell-size and polygonizes it into a boundary.
+ */
 int
 bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) {
   int i, j, xpos, ypos, edge, l, lxi, lyi;
@@ -352,6 +366,8 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
 			 ysize, xsize);
 
   /* Allocate memory for arrays 
+   * `blockarray` will hold the point data location information
+   * `edgearray` wll hold the edge information for each edge cell
    */
   int** blockarray;
   blockarray = (int**) malloc (ysize * sizeof(int*));
@@ -377,6 +393,8 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
 
   if (vflag > 0) fprintf(stderr,"bounds: Gridding points\n");
 
+  /* Assign all blockarray values to zero
+   */
   for (i = 0; i < ysize; i++) 
     for (j = 0; j < xsize; j++) 
       blockarray[i][j] = 0;
@@ -397,7 +415,7 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
 
   /* Allocate memory for the edge points.
    * There may be more boundary points than input points,
-   * so a new array is used.
+   * so a new array is used
    */
   point_t* bnds;
   bnds = (point_t*) malloc (sizeof (point_t) * xys);
@@ -590,7 +608,6 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
 	      fflush (stderr);
 	    }
 	}
-
     }
 
   /* Cleanup up and return.
