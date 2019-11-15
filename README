@@ -12,6 +12,8 @@ With Bounds, generate an ogr-gmt compatible boundary vector of a given point set
 bounds [OPTION]... [FILE]
 Generate a boundary of the set of xy points from FILE, or standard input, to standard output.
 
+  ---- xy i/o ----
+
   -d, --delimiter       the input xy file record delimiter
   -r, --record          the input record order, 'xy' should represent the locations
                         of the x and y records, respectively. (e.g. --record zdyx)
@@ -21,12 +23,19 @@ Generate a boundary of the set of xy points from FILE, or standard input, to sta
 
   ---- bounds ----
 
-  -b, --box             'bounding box' boundary.
-  -k, --block           'block' boundary. specify the blocking increment here. (e.g. --block 0.001)
-                        append a region if desired (e.g. --block 0.001/west/east/south/north
+  -b, --box             'bounding box' boundary. 
+
+  -k, --block           'bounding block' boundary. specify the blocking increment
+                        in input units (e.g. --block 0.001). specify a blocking region
+                        after the increment if desired (e.g. --block 0.001/west/east/south/north)
+
   -x, --convex          'convex hull' boundary using a monotone chain algorithm. (default)
-  -v, --concave         'concave hull' boundary using a distance weighted package wrap algorithm.
-                        specify the distance threshold here. (e.g. --concave 0.01)
+
+  -v, --concave         'concave hull' boundary using a distance weighted package wrap algorithm. 
+                        specify the distance threshold in input units. (e.g. --concave 0.01)
+
+  ---- et cetra ----
+
       --verbose         increase the verbosity.
       --help            print this help menu and exit.
       --version         print version information and exit.

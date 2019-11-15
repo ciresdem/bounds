@@ -40,6 +40,7 @@ usage ()
 bounds [OPTION]... [FILE]\n\
 Generate a boundary of the set of xy points from FILE, or standard input, to standard output.\n\
 \n\
+  ---- xy i/o ----\n\n\
   -d, --delimiter\tthe input xy file record delimiter\n\
   -r, --record\t\tthe input record order, 'xy' should represent the locations\n\
               \t\tof the x and y records, respectively. (e.g. --record zdyx)\n\
@@ -47,12 +48,14 @@ Generate a boundary of the set of xy points from FILE, or standard input, to sta
   -n, --name\t\tthe output layer name\n\
   -a, --append\t\tdon't print gmt-header\n\n\
   ---- bounds ----\n\n\
-  -b, --box\t\t'bounding box' boundary. \n\
-  -k, --block\t\t'block' boundary. specify the blocking increment here. (e.g. --block 0.001)\n\
-             \t\tappend a region if desired (e.g. --block 0.001/west/east/south/north\n\
-  -x, --convex\t\t'convex hull' boundary using a monotone chain algorithm. (default)\n\
+  -b, --box\t\t'bounding box' boundary. \n\n\
+  -k, --block\t\t'bounding block' boundary. specify the blocking increment\n\
+             \t\tin input units (e.g. --block 0.001). specify a blocking region\n\
+             \t\tafter the increment if desired (e.g. --block 0.001/west/east/south/north)\n\n\
+  -x, --convex\t\t'convex hull' boundary using a monotone chain algorithm. (default)\n\n\
   -v, --concave\t\t'concave hull' boundary using a distance weighted package wrap algorithm. \n\
-               \t\tspecify the distance threshold here. (e.g. --concave 0.01)\n\
+               \t\tspecify the distance threshold in input units. (e.g. --concave 0.01)\n\n\
+  ---- et cetra ----\n\n\
       --verbose\t\tincrease the verbosity.\n\
       --help\t\tprint this help menu and exit.\n\
       --version\t\tprint version information and exit.\n\n\
