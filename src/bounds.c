@@ -361,6 +361,9 @@ main (int argc, char **argv)
       if (dist > 0) hullsize = -1;
       else hullsize = 0;
       
+      if (verbose_flag > 0)
+	fprintf (stderr,"bounds: %-10s %-10s\n\rbounds: %-10d %-10f", "iteration", "distance", pc, dist);
+
       /* Keep a copy of the original point-set in `pts2` in-case
 	 * we need to re-run with a higher `dist` value. */
       point_t* pnts2;  
@@ -385,8 +388,6 @@ main (int argc, char **argv)
 	    for (i = hullsize; i < npr; i++)
 	      if (!inside (&pnts[i], pnts, hullsize, dist)) 
 		{
-		  if (verbose_flag > 0) 
-		    fprintf (stderr,"bounds: Failed to gather all points");
 		  hullsize = -1;
 		  break;
 		}
@@ -398,7 +399,7 @@ main (int argc, char **argv)
 	      memcpy (pnts, pnts2, sizeof (point_t) * npr);
 	      if (verbose_flag > 0) 
 		{
-		  fprintf (stderr,"\rbounds: Increasing distance ( %f )", dist);
+		  fprintf (stderr,"\rbounds: %-10d %-10f", pc, dist);
 		  fflush (stderr);
 		}
 	    }

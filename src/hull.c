@@ -164,6 +164,7 @@ dpw_concave (point_t* points, int npoints, double d)
   float th, cth;
   point_t t, t0;
   line_t l1, l2;
+  int rein = 0;
 
   /* Find the minimum y value in the dataset */
   for (min = 0, i = 1; i < npoints-1; i++)
@@ -180,8 +181,14 @@ dpw_concave (point_t* points, int npoints, double d)
       if (M > 0) t0 = points[M - 1];
       
       /* Re-insert the first point into the dataset */
-      if (M > 10 || M > (npoints * .1)) points[npoints-1] = points[0];
-      //if (dist_euclid(&points[0], &points[M]) > d) points[npoints-1] = points[0];
+      /* This is wrong, don't want to replace the last point, as it might be crucial */
+      /* 	if (dist_euclid(&points[0], &points[M]) > d)  */
+      if (rein == 0)
+	if (M > 3) 
+	  {
+	    points[npoints-1] = points[0];
+	    rein = 1;
+	  }
       
       /* Loop through the remaining points and find the next concave point; 
 	 less than distance threshold -> less than working theta -> does not 
