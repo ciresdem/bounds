@@ -41,20 +41,21 @@ bounds [OPTION]... [FILE]\n\
 Generate a boundary of the set of xy points from FILE, or standard input, to standard output.\n\
 \n\
   ---- xy i/o ----\n\n\
-  -d, --delimiter\tthe input xy file record delimiter\n\
-  -r, --record\t\tthe input record order, 'xy' should represent the locations\n\
-              \t\tof the x and y records, respectively. (e.g. --record zdyx)\n\
-  -s, --skip\t\tspecify the number of lines to skip here.\n\
-  -n, --name\t\tthe output layer name\n\
-  -a, --append\t\tdon't print gmt-header\n\n\
+  -d, --delimiter\tThe input xy file record delimiter.\n\
+  -g, --gmt\t\tFormat output as GMT vector multipolygon; Use twice to supress\n\
+           \t\tthe initial header (e.g. -gg).\n\
+  -n, --name\t\tThe output layer name (only used with -g).\n\
+  -r, --record\t\tThe input record order, 'xy' should represent the locations\n\
+              \t\tof the x and y records, respectively (e.g. --record zdyx).\n\
+  -s, --skip\t\tThe number of lines to skip from the input.\n\n\
   ---- bounds ----\n\n\
-  -b, --box\t\t'bounding box' boundary. \n\n\
-  -k, --block\t\t'bounding block' boundary. specify the blocking increment\n\
-             \t\tin input units (e.g. --block 0.001). specify a blocking region\n\
-             \t\tafter the increment if desired (e.g. --block 0.001/west/east/south/north)\n\n\
-  -x, --convex\t\t'convex hull' boundary using a monotone chain algorithm. (default)\n\n\
-  -v, --concave\t\t'concave hull' boundary using a distance weighted package wrap algorithm. \n\
-               \t\tspecify the distance threshold in input units. (e.g. --concave 0.01)\n\n\
+  -b, --box\t\t'Bounding Box' boundary. \n\
+  -k, --block\t\t'Bounding Block' boundary. Specify the blocking increment\n\
+             \t\tin input units (e.g. --block 0.001). Specify a blocking region\n\
+             \t\tafter the increment if desired (e.g. --block 0.001/west/east/south/north).\n\
+  -x, --convex\t\t'Convex Hull' boundary using a monotone chain algorithm. [default]\n\
+  -v, --concave\t\t'Concave Hull' boundary using a distance weighted package wrap algorithm.\n\
+               \t\tSpecify the distance threshold in input units (e.g. --concave 0.01).\n\n\
   ---- et cetra ----\n\n\
       --verbose\t\tincrease the verbosity.\n\
       --help\t\tprint this help menu and exit.\n\
@@ -64,8 +65,8 @@ With no FILE, or when FILE is --, read standard input.\n\
 All OPTION values must be in the same units as the input xy data.\n\n\
 Examples:\n\
   bounds \t\toutput a convex hull from standard input.\n\
-  bounds -k 0.0001\toutput a 'block' boundary from standard input.\n\
-  bounds -v 10 -d \",\"\toutput a concave hull from comma-delimited standard input.\n\
+  bounds -g -k 0.0001\toutput a 'block' boundary from standard input in GMT format.\n\
+  bounds -v 10 -d \",\"\toutput a concave hull from comma-delimited standard input\n\
 ");
   exit (1);
 }
@@ -187,7 +188,7 @@ main (int argc, char **argv)
 	  {"delimiter", required_argument, 0, 'd'},
 	  {"skip", required_argument, 0, 's'},
 	  {"name", required_argument, 0, 'n'},
-	  {"append", no_argument, 0, 'a'},
+	  {"gmt", no_argument, 0, 'g'},
 	  {"record", required_argument, 0, 'r'},
 	  {"box", no_argument, 0, 'b'},
 	  {"block", required_argument, 0, 'k'},
@@ -198,7 +199,7 @@ main (int argc, char **argv)
       /* getopt_long stores the option index here. */
       int option_index = 0;
       
-      c = getopt_long (argc, argv, "ad:n:r:s:bk:xv:",
+      c = getopt_long (argc, argv, "gd:n:r:s:bk:xv:",
 		       long_options, &option_index);
     
       /* Detect the end of the options. */
@@ -228,7 +229,7 @@ main (int argc, char **argv)
 	nflag++;
 	lname = optarg;
 	break;
-      case 'a':
+      case 'g':
 	gmtflag++;
 	break;
       case 'b':
@@ -302,11 +303,18 @@ main (int argc, char **argv)
       else 
 	{
 	  npr++;
-	  point_t* temp = realloc (pnts, npr * sizeof (point_t));
+	  point_t* temp = realloc (pnts, (npr + 1) * sizeof (point_t));
 	  pnts = temp;
 	  pnts[i].x = rpnt.x, pnts[i].y = rpnt.y;
 	  i++;
 	}
+    }
+
+  if (i < 2) 
+    {
+      if (gmtflag == 1)
+	printf ("# @VGMT1.0 @GMULTIPOLYGON\n# @NName\n# @Tstring\n# FEATURE_DATA\n");
+      exit (EXIT_FAILURE);
     }
 
   if (verbose_flag > 0) 
@@ -314,10 +322,15 @@ main (int argc, char **argv)
  
   /* This is for the GMT compatibility. More can be done here.
    */
-  if (gmtflag == 0) 
+  if (gmtflag == 1)
+    {
       printf ("# @VGMT1.0 @GMULTIPOLYGON\n# @NName\n# @Tstring\n# FEATURE_DATA\n");
-
-  printf (">\n# @D%s\n# @P\n", lname);
+      printf (">\n# @D%s\n# @P\n", lname);
+    }
+  else if (gmtflag == 2)
+    printf (">\n# @D%s\n# @P\n", lname);
+  else
+    printf (">\n");
     
   /* The default is a convex hull -- `cflag` */
   if (cflag == 0 && vflag == 0 && bflag == 0 && kflag == 0) 
@@ -362,7 +375,7 @@ main (int argc, char **argv)
       else hullsize = 0;
       
       if (verbose_flag > 0)
-	fprintf (stderr,"bounds: %-10s %-10s\n\rbounds: %-10d %-10f", "iteration", "distance", pc, dist);
+      	fprintf (stderr,"bounds: %-10s %-10s\n\rbounds: %-10d %-10f", "iteration", "distance", pc, dist);
 
       /* Keep a copy of the original point-set in `pts2` in-case
 	 * we need to re-run with a higher `dist` value. */
@@ -415,7 +428,8 @@ main (int argc, char **argv)
       
       if (verbose_flag > 0) 
 	{
-	  fprintf (stderr, "\nbounds: Found %d concave boundary points at a %.6f distance threshhold.\n", hullsize, dist);
+	  fprintf (stderr, "\nbounds: Found %d concave boundary points at a %.6f distance threshhold.\n", 
+		   hullsize, dist);
 	}
       free (pnts2);
       pnts2 = NULL;

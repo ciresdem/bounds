@@ -358,8 +358,8 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
 
   /* Set the rows and columns of the internal grid 
    */
-  int ysize = fabs((xyi.ymax - xyi.ymin) / inc);
-  int xsize = fabs((xyi.xmax - xyi.xmin) / inc);
+  int ysize = fabs((xyi.ymax - xyi.ymin) / inc) + 1;
+  int xsize = fabs((xyi.xmax - xyi.xmin) / inc) + 1;
   ssize_t xys = (xsize * ysize) * 2;
 
   if (vflag > 0) fprintf(stderr,"bounds: Size of internal grid: %d/%d\n", 

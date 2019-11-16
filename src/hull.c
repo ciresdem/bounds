@@ -160,19 +160,23 @@ inside (point_t* p1, point_t* poly, ssize_t hullsize, double dist)
 ssize_t
 dpw_concave (point_t* points, int npoints, double d) 
 {
-  int i, min, M, k, j;
-  float th, cth;
+  int i, min, M, k, j, np;
+  float th, cth, fth;
   point_t t, t0;
   line_t l1, l2;
   int rein = 0;
 
   /* Find the minimum y value in the dataset */
-  for (min = 0, i = 1; i < npoints-1; i++)
+  for (min = 0, i = 1; i < npoints; i++)
     if (points[i].y < points[min].y) 
       min = i;
 
+  points[npoints].x = -9999;
+  points[npoints].y = -9999;
+  np = npoints;
+
   /* Loop through all the points, starting with the point found above. */
-  for (M = 0; M < npoints; M++) 
+  for (M = 0; M < np; M++) 
     {
       t = points[M], points[M] = points[min], points[min] = t;
       min = -1, k = 0, th = 2*M_PI;
@@ -181,19 +185,22 @@ dpw_concave (point_t* points, int npoints, double d)
       if (M > 0) t0 = points[M - 1];
       
       /* Re-insert the first point into the dataset */
-      /* This is wrong, don't want to replace the last point, as it might be crucial */
-      /* 	if (dist_euclid(&points[0], &points[M]) > d)  */
       if (rein == 0)
-	if (M > 3) 
-	  {
-	    points[npoints-1] = points[0];
-	    rein = 1;
-	  }
+	{
+	  fth = atheta (&points[M], &points[0], &t0);
+	  if (fth > 0 && fth < th)
+	    {
+	      points[npoints] = points[0];
+	      rein = 1;
+	      np++;
+	    }
+	}
       
       /* Loop through the remaining points and find the next concave point; 
 	 less than distance threshold -> less than working theta -> does not 
 	 intersect existing boundary */
-      for (i = M + 1; i < npoints; i++) 
+      
+      for (i = M + 1; i < np; i++) 
 	if (dist_euclid(&points[M], &points[i]) < d) 
 	  {
 	    if (M == 0) 
@@ -218,13 +225,17 @@ dpw_concave (point_t* points, int npoints, double d)
 		  min = i, th = cth; 
 	      }
 	  }
+
       /* No point was found, try again with a larger distance threshhold. */
       if (min == -1) 
 	return min;
       
       /* The first point was found again, a successful hull was found! end here. */
-      if (min == npoints-1) 
+      if (min == npoints) 
 	{
+	  /* matched the null point... */
+	  if (points[min].x == -9999 || points[min].y == -9999)
+	    return -1;
 	  points[M + 1] = points[min];
 	  return M+1;
 	}
