@@ -161,7 +161,7 @@ main (int argc, char **argv)
 
   int c, i, status, min, j;
   int inflag = 0, vflag = 0, sflag = 0, pc = 0, sl = 0;
-  int cflag = 0, kflag = 0, calg = 0, bflag = 0, gmtflag = 0, nflag = 0;
+  int cflag = 0, kflag = 0, bflag = 0, gmtflag = 0, nflag = 0;
   double dist = 1;
 
   point_t rpnt, pnt;
@@ -310,6 +310,10 @@ main (int argc, char **argv)
 	}
     }
 
+  /* If fewet than two points are supplied, exit.
+   * Optionally, print the GMT header (used to initalize a multipolygon).
+   * e.g. cat /dev/null | bounds -g
+   */
   if (i < 2) 
     {
       if (gmtflag == 1)
@@ -352,7 +356,7 @@ main (int argc, char **argv)
   
   /* 'Package Wrap' Convex Hull Algorithm 
    */
-  else if (cflag == 1 && calg == 2)
+  else if (cflag == 2)
     {
       hullsize = pw_convex (pnts, npr);
       
@@ -427,10 +431,8 @@ main (int argc, char **argv)
 	printf ("%f %f\n", pnts[i].x, pnts[i].y);
       
       if (verbose_flag > 0) 
-	{
-	  fprintf (stderr, "\nbounds: Found %d concave boundary points at a %.6f distance threshhold.\n", 
-		   hullsize, dist);
-	}
+	  fprintf (stderr, "\nbounds: Found %d total boundary points\n", hullsize);
+
       free (pnts2);
       pnts2 = NULL;
   }
@@ -462,7 +464,7 @@ main (int argc, char **argv)
   
   /* Bounding Block - polygonize a grid of the points using `dist` cell-size
    */
-  else if (kflag == 1) 
+  else if (kflag > 0) 
     {
       int kr_length;
       region_t rgn;
@@ -489,8 +491,10 @@ main (int argc, char **argv)
       
       /* The distance parameter can't be less than zero */
       if (dist > 0) 
-	bbp_block (pnts, npr, dist, rgn, verbose_flag);
-      //bbe_block (pnts, npr, dist, rgn, verbose_flag);
+	if (kflag == 1)
+	  bbp_block (pnts, npr, dist, rgn, verbose_flag);
+	else if (kflag == 2)
+	  bbe_block (pnts, npr, dist, rgn, verbose_flag);
     }
 
   free (pnts);

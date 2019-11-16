@@ -143,13 +143,13 @@ bbe_block (point_t* points, int npoints, double inc, region_t region, int vflag)
 
   /* Set the rows and columns of the internal grid 
    */
-  int ysize = fabs ((xyi.ymax - xyi.ymin) / inc);
-  int xsize = fabs ((xyi.xmax - xyi.xmin) / inc);
+  int ysize = fabs ((xyi.ymax - xyi.ymin) / inc) + 1;
+  int xsize = fabs ((xyi.xmax - xyi.xmin) / inc) + 1;
 
   /* `xys` is the size of the bbarray array, this has to be large enough
    * to hold all 4 sides of every other cell in the grid. 
    */
-  ssize_t xys = (xsize * ysize) * 2;
+  ssize_t xys = ((xsize * ysize) * 4) + 1;
   
   if (vflag > 0) 
     fprintf (stderr, "bounds: Size of internal grid: %d/%d\n", 
@@ -360,7 +360,7 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
    */
   int ysize = fabs((xyi.ymax - xyi.ymin) / inc) + 1;
   int xsize = fabs((xyi.xmax - xyi.xmin) / inc) + 1;
-  ssize_t xys = (xsize * ysize) * 2;
+  ssize_t xys = ((xsize * ysize) * 4) + 1;
 
   if (vflag > 0) fprintf(stderr,"bounds: Size of internal grid: %d/%d\n", 
 			 ysize, xsize);
