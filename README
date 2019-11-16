@@ -14,25 +14,23 @@ Generate a boundary of the set of xy points from FILE, or standard input, to sta
 
   ---- xy i/o ----
 
-  -d, --delimiter       the input xy file record delimiter
-  -r, --record          the input record order, 'xy' should represent the locations
-                        of the x and y records, respectively. (e.g. --record zdyx)
-  -s, --skip            specify the number of lines to skip here.
-  -n, --name            the output layer name
-  -a, --append          don't print gmt-header
+  -d, --delimiter       The input xy file record delimiter.
+  -g, --gmt             Format output as GMT vector multipolygon; Use twice to supress
+                        the initial header (e.g. -gg).
+  -n, --name            The output layer name (only used with -g).
+  -r, --record          The input record order, 'xy' should represent the locations
+                        of the x and y records, respectively (e.g. --record zdyx).
+  -s, --skip            The number of lines to skip from the input.
 
   ---- bounds ----
 
-  -b, --box             'bounding box' boundary. 
-
-  -k, --block           'bounding block' boundary. specify the blocking increment
-                        in input units (e.g. --block 0.001). specify a blocking region
-                        after the increment if desired (e.g. --block 0.001/west/east/south/north)
-
-  -x, --convex          'convex hull' boundary using a monotone chain algorithm. (default)
-
-  -v, --concave         'concave hull' boundary using a distance weighted package wrap algorithm. 
-                        specify the distance threshold in input units. (e.g. --concave 0.01)
+  -b, --box             'Bounding Box' boundary. 
+  -k, --block           'Bounding Block' boundary. Specify the blocking increment
+                        in input units (e.g. --block 0.001). Specify a blocking region
+                        after the increment if desired (e.g. --block 0.001/west/east/south/north).
+  -x, --convex          'Convex Hull' boundary using a monotone chain algorithm. [default]
+  -v, --concave         'Concave Hull' boundary using a distance weighted package wrap algorithm.
+                        Specify the distance threshold in input units (e.g. --concave 0.01).
 
   ---- et cetra ----
 
@@ -46,5 +44,5 @@ All OPTION values must be in the same units as the input xy data.
 
 Examples:
   bounds                output a convex hull from standard input.
-  bounds -k 0.0001      output a 'block' boundary from standard input.
+  bounds -g -k 0.0001   output a 'block' boundary from standard input in GMT format.
   bounds -v 10 -d ","   output a concave hull from comma-delimited standard input.

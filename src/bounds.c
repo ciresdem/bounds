@@ -66,7 +66,7 @@ All OPTION values must be in the same units as the input xy data.\n\n\
 Examples:\n\
   bounds \t\toutput a convex hull from standard input.\n\
   bounds -g -k 0.0001\toutput a 'block' boundary from standard input in GMT format.\n\
-  bounds -v 10 -d \",\"\toutput a concave hull from comma-delimited standard input\n\
+  bounds -v 10 -d \",\"\toutput a concave hull from comma-delimited standard input.\n\
 ");
   exit (1);
 }
