@@ -165,7 +165,7 @@ dpw_concave (point_t* points, int npoints, double d)
   float th, cth, fth;
   point_t t, t0;
   line_t l1, l2;
-  int rein = 0, l = 0;
+  int rein = 0;
 
   /* Find the minimum y value in the dataset */
   for (min = 0, i = 1; i < npoints; i++)
@@ -199,7 +199,6 @@ dpw_concave (point_t* points, int npoints, double d)
       /* Loop through the remaining points and find the next concave point; 
 	 less than distance threshold -> less than working theta -> does not 
 	 intersect existing boundary */
-      //fprintf(stderr,"M:%d\n", M);
       for (i = M + 1; i < np; i++) 
 	if (dist_euclid (&points[M], &points[i]) <= d) 
 	  {
@@ -209,7 +208,6 @@ dpw_concave (point_t* points, int npoints, double d)
 	      cth = atheta (&points[M], &points[i], &t0);
 	    if (cth > FLT_EPSILON && cth <= th) 
 	      {
-		//fprintf(stderr,"cth: %f th: %f\n", cth, th);
 		/* Make sure the selected point doesn't create a line segment which
 		   intersects with the existing hull. */
 		//if (M > 0)
@@ -218,21 +216,16 @@ dpw_concave (point_t* points, int npoints, double d)
 		for (k = 0, j = 1; j < M - 1; j++) 
 		  {
 		    l2.p1 = points[j], l2.p2 = points[j + 1];
-
 		    if (intersect1_p (l1, l2, 0)) k++;
 
 		  }
 
 		/* If all criteria are met,, add this point to the hull */
 		if (k == 0) 
-		  {
-		    //fprintf(stderr,"%d %.12f %f %.12f\n",M,cth,th,FLT_EPSILON);
 		    min = i, th = cth; 
-		  }
 	      }
 	  }
 
-      //fprintf(stderr,"min:%d\n", min);
       /* No point was found, try again with a larger distance threshhold. */
       if (min == -1) 
 	return min;
