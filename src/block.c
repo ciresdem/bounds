@@ -257,7 +257,7 @@ bbe_block (point_t* points, int npoints, double inc, region_t region, int vflag)
   point_t* bnds;  
   bnds = (point_t*) malloc (sizeof (point_t) * (bb + 1));
 
-  if (vflag > 0) 
+  if (vflag > 0)
     {
       fprintf (stderr, "bounds: Sorting %d edge lines into a boundary\n", bb);
       fprintf (stderr, "bounds: %-10s\t %-10s\t %-10s\n", "Boundaries", "Points Sorted", "Remaining Edges");
@@ -324,11 +324,11 @@ bbe_block (point_t* points, int npoints, double inc, region_t region, int vflag)
 	  printf( ">\n" );
 	}
 
-      if (vflag > 0) 
-	{
-	  fprintf (stderr, "\rbounds: %-10d\t %-10d\t %-10d", bp, fcount, bb);
-	  fflush (stderr);
-	}
+      if (vflag > 0)
+      	{
+      	  fprintf (stderr, "\rbounds: %-10d\t %-10d\t %-10d", bp, fcount, bb);
+      	  fflush (stderr);
+      	}
     }
   
   if (vflag > 0) 
@@ -451,18 +451,11 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
 	    blockarray[i][j] = 2;
 	}
 
-  if (vflag > 0) 
-    {
-      fprintf (stderr, "bounds: %-10s\t %-10s\n", "Boundaries", "Points Sorted");
-      fprintf (stderr, "\rbounds: %-10d\t %-10d", 0, fcount);
-    }
-
   /* Scan the edgearray and arrange and output the edges into polygon(s).
    * pdone is 1 when we can't find any more edge cells.
    */
   while (pdone == 0)
     {
-
       /* Find the first edge in the polygon; add it to bnds and record it's position.
        */
       for (i = int_or_zero (fyi - 2); i < ysize; i++) 
@@ -504,10 +497,9 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
 	    }
     
       if (bcount != 2) 
-	{
-	  done = 1;
-	  pdone = 1;
-	}
+	  done = 1, pdone = 1;
+      else
+	printf( ">\n" );
       
       /* Scan the nearby cells in the edgearray and build polygons.
        * done is 1 when we match the first point found above.
@@ -531,8 +523,7 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
 			  else bnds[bcount].x = bb1.x, bnds[bcount].y = bb1.y;
 
 			  edgearray[i][j].b = 0;
-			  lxi = j, lyi = i;
-			  bcount++;
+			  lxi = j, lyi = i, bcount++;
 
 			  if (g_edges_p (edgearray[i][j]) == 0) blockarray[i][j] = 2;
 			}
@@ -550,8 +541,7 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
 			  else bnds[bcount].x = bb1.x, bnds[bcount].y = bb1.y;
 
 			  edgearray[i][j].l = 0;
-			  lxi = j, lyi = i;
-			  bcount++;
+			  lxi = j, lyi = i, bcount++;
 			  
 			  if (g_edges_p (edgearray[i][j]) == 0) blockarray[i][j] = 2;
 			}
@@ -569,8 +559,7 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
 			  else bnds[bcount].x = bb1.x, bnds[bcount].y = bb1.y;
 
 			  edgearray[i][j].t = 0;
-			  lxi = j, lyi = i;
-			  bcount++;
+			  lxi = j, lyi = i, bcount++;
 
 			  if (g_edges_p (edgearray[i][j]) == 0) blockarray[i][j] = 2;
 			}
@@ -588,8 +577,7 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
 			  else bnds[bcount].x = bb1.x, bnds[bcount].y = bb1.y;
 
 			  edgearray[i][j].r = 0;
-			  lxi = j, lyi = i;
-			  bcount++;
+			  lxi = j, lyi = i, bcount++;
 
 			  if (g_edges_p (edgearray[i][j]) == 0) blockarray[i][j] = 2;
 			}
@@ -606,15 +594,7 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
       bcount = 0, done = 0;
       
       if (pdone == 0) 
-	{
-	  bp++;
-	  printf( ">\n" );
-	  if (vflag > 0) 
-	    {
-	      fprintf (stderr, "\rbounds: %-10d\t %-10d", bp, fcount);
-	      fflush (stderr);
-	    }
-	}
+	bp++;
     }
 
   /* Cleanup up and return.
@@ -633,7 +613,7 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
   edgearray = NULL;
   
   if (vflag > 0) 
-    fprintf (stderr,"\nbounds: Found %d total boundary points\n", fcount);
+    fprintf (stderr,"bounds: Found %d total boundary points\n", fcount);
 
   free (bnds);
   bnds = NULL;

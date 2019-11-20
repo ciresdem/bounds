@@ -413,9 +413,6 @@ main (int argc, char **argv)
       if (dist > 0) hullsize = -1;
       else hullsize = 0;
 
-      if (verbose_flag > 0)
-      	fprintf (stderr,"bounds: %-10s %-10s\n\rbounds: %-10d %-10.12f", "iteration", "distance", pc, dist);
-
       /* Keep a copy of the original point-set in `pts2` in-case
 	 * we need to re-run with a higher `dist` value. */
       point_t* pnts2;  
@@ -449,11 +446,6 @@ main (int argc, char **argv)
 	    {
 	      dist += dist, pc++;
 	      memcpy (pnts, pnts2, sizeof (point_t) * (npr + 1));
-	      if (verbose_flag > 0) 
-		{
-		  fprintf (stderr,"\rbounds: %-10d %-10.12f", pc, dist);
-		  fflush (stderr);
-		}
 	    }
 	  
 	  /* In case something funky happens. */
@@ -466,7 +458,7 @@ main (int argc, char **argv)
 	printf ("%f %f\n", pnts[i].x, pnts[i].y);
       
       if (verbose_flag > 0) 
-	  fprintf (stderr, "\nbounds: Found %d total boundary points\n", hullsize);
+	  fprintf (stderr, "bounds: Found %d total boundary points\n", hullsize);
 
       free (pnts2);
       pnts2 = NULL;
