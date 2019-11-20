@@ -110,32 +110,21 @@ intersect1_p (line_t l1, line_t l2, int t)
 {
   int a, b, c, d;
 
-  a = ccw (&l1.p1, &l1.p2, &l2.p1);
-  b = ccw (&l1.p1, &l1.p2, &l2.p2);
-  c = ccw (&l2.p1, &l2.p2, &l1.p1);
-  d = ccw (&l2.p1, &l2.p2, &l1.p2);
+  a = ccw (&l1.p1, &l1.p2, &l2.p1), b = ccw (&l1.p1, &l1.p2, &l2.p2);
+  c = ccw (&l2.p1, &l2.p2, &l1.p1), d = ccw (&l2.p1, &l2.p2, &l1.p2);
 
-  if (a != b && c != d)
-    return 1;
+  if (a != b && c != d) return 1;
 
-  if (a == 0 && on_line_p (&l1.p1, &l2.p1, &l1.p2))
-    return 1;
-  
-  if (b == 0 && on_line_p (&l1.p1, &l2.p2, &l1.p2))
-    return 1;
-  
-  if (c == 0 && on_line_p (&l2.p1, &l1.p1, &l2.p2))
-    return 1;
-    
-  if (d == 0 && on_line_p (&l2.p1, &l1.p2, &l2.p2))
-    return 1;
+  if (a == 0 && on_line_p (&l1.p1, &l2.p1, &l1.p2)) return 1;
+  if (b == 0 && on_line_p (&l1.p1, &l2.p2, &l1.p2)) return 1;
+  if (c == 0 && on_line_p (&l2.p1, &l1.p1, &l2.p2)) return 1;
+  if (d == 0 && on_line_p (&l2.p1, &l1.p2, &l2.p2)) return 1;
 
   return 0;
 
 }
 
-/* Return 1 if point p1 is inside polygon poly
- * TODO: point that crosses through end-point between two polygon lines will return 2-
+/* Return 1 if point p1 is inside polygon poly, otherwise return 0
  */
 int
 inside (point_t* p1, point_t* poly, ssize_t hullsize, double dist) 
@@ -153,12 +142,13 @@ inside (point_t* p1, point_t* poly, ssize_t hullsize, double dist)
     {
       lp.p1 = poly[i], lp.p2 = poly[i+1];
     
-      if (lt.p1.y == lp.p1.y) 
-	k--;
+      if (lt.p1.y == lp.p2.y || lt.p1.y == lp.p1.y) l++;
 
       if (intersect1_p (lt, lp, 1)) k++;
     }
-  //fprintf(stderr, "k: %d %d\n", k, l);
+
+  if (l == 2) return 1;
+
   return k & 1;
 }
 
@@ -175,7 +165,7 @@ dpw_concave (point_t* points, int npoints, double d)
   float th, cth, fth;
   point_t t, t0;
   line_t l1, l2;
-  int rein = 0;
+  int rein = 0, l = 0;
 
   /* Find the minimum y value in the dataset */
   for (min = 0, i = 1; i < npoints; i++)
@@ -202,15 +192,14 @@ dpw_concave (point_t* points, int npoints, double d)
 	  if (M > 10)
 	    {
 	      points[npoints] = points[0];
-	      rein = 1;
-	      np++;
+	      rein = 1, np++;
 	    }
 	}
       
       /* Loop through the remaining points and find the next concave point; 
 	 less than distance threshold -> less than working theta -> does not 
 	 intersect existing boundary */
-      
+      //fprintf(stderr,"M:%d\n", M);
       for (i = M + 1; i < np; i++) 
 	if (dist_euclid (&points[M], &points[i]) <= d) 
 	  {
@@ -218,24 +207,32 @@ dpw_concave (point_t* points, int npoints, double d)
 	      cth = theta (&points[M], &points[i]);
 	    else 
 	      cth = atheta (&points[M], &points[i], &t0);
-	    if (cth > 0 && cth <= th) 
+	    if (cth > FLT_EPSILON && cth <= th) 
 	      {
+		//fprintf(stderr,"cth: %f th: %f\n", cth, th);
 		/* Make sure the selected point doesn't create a line segment which
 		   intersects with the existing hull. */
-		if (M > 0)
-		  for (k = 0, j = 1; j < M-1; j++) 
-		    {
-		      l1.p1 = points[M], l1.p2 = points[i];
-		      l2.p1 = points[j], l2.p2 = points[j + 1];
-		      
-		      if (intersect1_p (l1, l2, 0)) k++;
-		    }
+		//if (M > 0)
+		l1.p1 = points[M], l1.p2 = points[i];
+
+		for (k = 0, j = 1; j < M - 1; j++) 
+		  {
+		    l2.p1 = points[j], l2.p2 = points[j + 1];
+
+		    if (intersect1_p (l1, l2, 0)) k++;
+
+		  }
+
 		/* If all criteria are met,, add this point to the hull */
 		if (k == 0) 
-		  min = i, th = cth; 
+		  {
+		    //fprintf(stderr,"%d %.12f %f %.12f\n",M,cth,th,FLT_EPSILON);
+		    min = i, th = cth; 
+		  }
 	      }
 	  }
 
+      //fprintf(stderr,"min:%d\n", min);
       /* No point was found, try again with a larger distance threshhold. */
       if (min == -1) 
 	return min;

@@ -436,8 +436,6 @@ main (int argc, char **argv)
 	    for (i = hullsize+1; i < npr; i++)
 	      if (!inside (&pnts[i], pnts, hullsize, 0)) 
 		{
-		  //fprintf(stderr, "\nbounds: Found a hull, but still points to gather  %d %d\n", hullsize, i);
-		  //fprintf(stderr, "outside: %f %f %d\n", pnts[i].x, pnts[i].y, i);
 		  hullsize = -1;
 		  break;
 		}
