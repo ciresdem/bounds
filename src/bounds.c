@@ -54,8 +54,7 @@ Generate a boundary of the set of xy points from FILE, or standard input, to sta
              \t\tin input units (e.g. --block 0.001). Specify a blocking region\n\
              \t\tafter the increment if desired (e.g. --block 0.001/west/east/south/north).\n\
   -x, --convex\t\t'Convex Hull' boundary using a monotone chain algorithm. [default]\n\
-  -v, --concave\t\t'Concave Hull' boundary using a distance weighted package wrap algorithm.\n\
-               \t\tSpecify the distance threshold in input units (e.g. --concave 0.01).\n\n\
+  -v, --concave\t\t'Concave Hull' boundary using a distance weighted package wrap algorithm.\n\n\
   ---- et cetra ----\n\n\
       --verbose\t\tincrease the verbosity.\n\
       --help\t\tprint this help menu and exit.\n\
@@ -153,6 +152,36 @@ region_valid_p (region_t *region)
   return 1;
 }
 
+/* Quick and Dirty Density
+ */
+double
+qadd (point_t* points, int npoints)
+{
+  int i, xmin, xmax, ymin, ymax;
+  line_t l1, l2, l3, l4;
+  double w, l;
+  
+  /* Find the extent values in the dataset */
+  for (ymin = 0, ymax = 0, xmin = 0, xmax = 0, i = 1; i < npoints; i++) 
+    {
+      if (points[i].y < points[ymin].y) 
+	ymin = i;
+      if (points[i].x < points[xmin].x) 
+	xmin = i;
+      if (points[i].y > points[ymax].y) 
+	ymax = i;
+      if (points[i].x > points[xmax].x) 
+	xmax = i;
+    }
+
+  // width
+  w = points[xmax].x - points[xmin].x;
+  //length
+  l = points[ymax].y - points[ymin].y;
+
+  return ((w * l) / npoints) ;
+}
+
 int
 main (int argc, char **argv) 
 {
@@ -162,7 +191,7 @@ main (int argc, char **argv)
   int c, i, status, min, j;
   int inflag = 0, vflag = 0, sflag = 0, pc = 0, sl = 0;
   int cflag = 0, kflag = 0, bflag = 0, gmtflag = 0, nflag = 0;
-  double dist = 1;
+  double dist;
 
   point_t rpnt, pnt;
   point_ptr_t hull0[MAX_HULLS];
@@ -375,11 +404,13 @@ main (int argc, char **argv)
   else if (vflag == 1) 
     {
       /* The distance parameter can't be less than zero */
+      if (!dist)
+	dist = qadd (pnts, npr);
       if (dist > 0) hullsize = -1;
       else hullsize = 0;
-      
+
       if (verbose_flag > 0)
-      	fprintf (stderr,"bounds: %-10s %-10s\n\rbounds: %-10d %-10f", "iteration", "distance", pc, dist);
+      	fprintf (stderr,"bounds: %-10s %-10s\n\rbounds: %-10d %-10.12f", "iteration", "distance", pc, dist);
 
       /* Keep a copy of the original point-set in `pts2` in-case
 	 * we need to re-run with a higher `dist` value. */
@@ -402,27 +433,29 @@ main (int argc, char **argv)
 	   * distance and retry.
 	   */
 	  if (hullsize >= 0)
-	    for (i = hullsize; i < npr; i++)
-	      if (!inside (&pnts[i], pnts, hullsize, dist)) 
+	    for (i = hullsize+1; i < npr; i++)
+	      if (!inside (&pnts[i], pnts, hullsize, 0)) 
 		{
+		  //fprintf(stderr, "\nbounds: Found a hull, but still points to gather  %d %d\n", hullsize, i);
+		  //fprintf(stderr, "outside: %f %f %d\n", pnts[i].x, pnts[i].y, i);
 		  hullsize = -1;
 		  break;
 		}
-	  
+
 	  /* If a hull wasn't found, increase the `dist` and try again. */
 	  if (hullsize == -1) 
 	    {
-	      dist = dist + (dist * 0.25), pc++;
-	      memcpy (pnts, pnts2, sizeof (point_t) * npr);
+	      dist += dist, pc++;
+	      memcpy (pnts, pnts2, sizeof (point_t) * (npr + 1));
 	      if (verbose_flag > 0) 
 		{
-		  fprintf (stderr,"\rbounds: %-10d %-10f", pc, dist);
+		  fprintf (stderr,"\rbounds: %-10d %-10.12f", pc, dist);
 		  fflush (stderr);
 		}
 	    }
 	  
 	  /* In case something funky happens. */
-	  if (dist == INFINITY || dist == NAN || dist <= FLT_EPSILON) 
+	  if (dist == INFINITY || dist == NAN || dist < 0) 
 	    hullsize = 0;
 	}
       

@@ -20,7 +20,7 @@
 #include <float.h>
 #include <limits.h>
 
-#define BOUNDS_VERSION "0.5.2"
+#define BOUNDS_VERSION "0.5.3"
 
 #define MAX_RECORD_LENGTH 1024
 #define MAX_HULLS 100000
@@ -32,6 +32,9 @@
 #ifndef NAN
 #define NAN (0.0 / 0.0)
 #endif 
+
+#define max(x, y) (((x) > (y)) ? (x) : (y))
+#define min(x, y) (((x) < (y)) ? (x) : (y))
 
 typedef struct 
 {

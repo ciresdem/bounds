@@ -83,50 +83,60 @@ theta_degrees (point_t* p1, point_t* p2)
  * gives the signed area of the triangle formed by p1, p2 and p3.
  */
 static double
-ccw (point_t* p1, point_t* p2, point_t* p3) 
+ccw2 (point_t* p1, point_t* p2, point_t* p3) 
 {
-  return (p2->x - p1->x) * (p3->y - p1->y) - (p2->y - p1->y) * (p3->x - p1->x);
+  return (p2->x - p1->x) * (p3->y - p2->y) - (p2->y - p1->y) * (p3->x - p2->x);
 }
 
 int
-intersect (line_t l1, line_t l2, double thresh) 
+ccw (point_t* p1, point_t* p2, point_t* p3) 
 {
-  double a, b;
-  a = ccw (&l1.p1, &l1.p2, &l2.p1) *ccw (&l1.p1, &l1.p2, &l2.p2);
-  b = ccw (&l2.p1, &l2.p2, &l1.p1) *ccw (&l2.p1, &l2.p2, &l1.p2);
+  float ccwv = (p2->y - p1->y) * (p3->x - p2->x) - (p2->x - p1->x) * (p3->y - p2->y);
+  if (ccwv == 0) return 0;
+  return (ccwv > 0)? 1: -1;
+}
 
-  if (a < (0 - thresh) && b < (0 - thresh)) 
+int
+on_line_p (point_t* p1, point_t* p2, point_t* p3)
+{
+  if (p2->x <= max (p1->x, p3->x) && p2->x >= min (p1->x, p3->x) &&
+      p2->y <= max (p1->y, p3->y) && p2->y >= min (p1->y, p3->y))
     return 1;
-  else if (a >= (0 - thresh) && a <= thresh) 
-    return 0;
-  else if (b >= (0 - thresh) && b <= thresh) 
-    return 0;
-  else 
-    return -1;
+  return 0;
 }
 
-/* Depreciated intersect function. 
- */
-static int
-intersectp (point_t* p1, point_t* p2, point_t* p3, point_t* p4) 
+int
+intersect1_p (line_t l1, line_t l2, int t)
 {
-  float den = (p2->x - p1->x) * (p4->y - p3->y) - (p2->y - p1->y) * (p4->x - p3->x);
+  int a, b, c, d;
+
+  a = ccw (&l1.p1, &l1.p2, &l2.p1);
+  b = ccw (&l1.p1, &l1.p2, &l2.p2);
+  c = ccw (&l2.p1, &l2.p2, &l1.p1);
+  d = ccw (&l2.p1, &l2.p2, &l1.p2);
+
+  if (a != b && c != d)
+    return 1;
+
+  if (a == 0 && on_line_p (&l1.p1, &l2.p1, &l1.p2))
+    return 1;
   
-  //if (fabs(den) < FLT_EPSILON) return 0; // parallel lines
-  if (!den) 
-    return 0;
+  if (b == 0 && on_line_p (&l1.p1, &l2.p2, &l1.p2))
+    return 1;
+  
+  if (c == 0 && on_line_p (&l2.p1, &l1.p1, &l2.p2))
+    return 1;
+    
+  if (d == 0 && on_line_p (&l2.p1, &l1.p2, &l2.p2))
+    return 1;
 
-  float a = ((p3->x - p1->x) * (p4->y - p3->y) - (p3->y - p1->y) * (p4->x - p3->x)) / den;
-  if (a <= 0  || a > 1.0) 
-    return 0; // intersection point not between p1 and p2
+  return 0;
 
-  a = ((p3->x - p1->x) * (p2->y - p1->y) - (p3->y - p1->y) * (p2->x - p1->x)) / den;
-  if (a <= 0 || a > 1.0) 
-    return 0; // intersection point not between p3 and p4
-
-  return 1;
 }
 
+/* Return 1 if point p1 is inside polygon poly
+ * TODO: point that crosses through end-point between two polygon lines will return 2-
+ */
 int
 inside (point_t* p1, point_t* poly, ssize_t hullsize, double dist) 
 {
@@ -137,17 +147,18 @@ inside (point_t* p1, point_t* poly, ssize_t hullsize, double dist)
 
   p2.y = p1->y, p2.x = FLT_MAX;
   lt.p1 = *p1, lt.p2 = p2;
-  
+  l = 0;
+
   for (i = 0; i < hullsize; i++) 
     {
       lp.p1 = poly[i], lp.p2 = poly[i+1];
-      
-      l = intersect (lt, lp, FLT_EPSILON * dist);
-      if (l == 0) 
-	return 1;
-      if (l == 1) 
-	k++;
+    
+      if (lt.p1.y == lp.p1.y) 
+	k--;
+
+      if (intersect1_p (lt, lp, 1)) k++;
     }
+  //fprintf(stderr, "k: %d %d\n", k, l);
   return k & 1;
 }
 
@@ -171,8 +182,7 @@ dpw_concave (point_t* points, int npoints, double d)
     if (points[i].y < points[min].y) 
       min = i;
 
-  points[npoints].x = -9999;
-  points[npoints].y = -9999;
+  points[npoints].x = -9999, points[npoints].y = -9999;
   np = npoints;
 
   /* Loop through all the points, starting with the point found above. */
@@ -187,8 +197,9 @@ dpw_concave (point_t* points, int npoints, double d)
       /* Re-insert the first point into the dataset */
       if (rein == 0)
 	{
-	  fth = atheta (&points[M], &points[0], &t0);
-	  if (fth > 0 && fth < th)
+	  //fth = atheta (&points[M], &points[0], &t0);
+	  //if (fth > 0 && fth < th)
+	  if (M > 10)
 	    {
 	      points[npoints] = points[0];
 	      rein = 1;
@@ -201,7 +212,7 @@ dpw_concave (point_t* points, int npoints, double d)
 	 intersect existing boundary */
       
       for (i = M + 1; i < np; i++) 
-	if (dist_euclid(&points[M], &points[i]) < d) 
+	if (dist_euclid (&points[M], &points[i]) <= d) 
 	  {
 	    if (M == 0) 
 	      cth = theta (&points[M], &points[i]);
@@ -212,13 +223,12 @@ dpw_concave (point_t* points, int npoints, double d)
 		/* Make sure the selected point doesn't create a line segment which
 		   intersects with the existing hull. */
 		if (M > 0)
-		  for (k = 0, j = 0; j < M; j++) 
+		  for (k = 0, j = 1; j < M-1; j++) 
 		    {
 		      l1.p1 = points[M], l1.p2 = points[i];
-		      l2.p1 = points[j], l2.p2 = points[j+1];
-
-		      if (intersectp (&l1.p1,&l1.p2,&l2.p1,&l2.p2) > 0) 
-			k++;
+		      l2.p1 = points[j], l2.p2 = points[j + 1];
+		      
+		      if (intersect1_p (l1, l2, 0)) k++;
 		    }
 		/* If all criteria are met,, add this point to the hull */
 		if (k == 0) 
@@ -237,7 +247,7 @@ dpw_concave (point_t* points, int npoints, double d)
 	  if (points[min].x == -9999 || points[min].y == -9999)
 	    return -1;
 	  points[M + 1] = points[min];
-	  return M+1;
+	  return M + 1;
 	}
     }
 }
