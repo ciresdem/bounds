@@ -128,12 +128,12 @@ theta_degrees (point_t* p1, point_t* p2);
 /* Return 1 if l1 and l2 intersect.
  */
 int
-intersect1_p (line_t l1, line_t l2);
+intersect_p (line_t l1, line_t l2);
 
 /* Return 1 if p1 is inside poly
  */
 int
-inside (point_t* p1, point_t* poly, ssize_t hullsize);
+inside_p (point_t* p1, point_t* poly, ssize_t hullsize);
 
 /* A 'package-wrap' concavehull 
  * -- Retruns the number of points in the boundary;

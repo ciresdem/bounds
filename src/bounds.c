@@ -430,7 +430,7 @@ main (int argc, char **argv)
 	   */
 	  if (hullsize >= 0)
 	    for (i = hullsize+1; i < npr; i++)
-	      if (!inside (&pnts[i], pnts, hullsize)) 
+	      if (!inside_p (&pnts[i], pnts, hullsize)) 
 		{
 		  hullsize = -1;
 		  break;

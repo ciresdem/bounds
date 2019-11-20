@@ -97,16 +97,26 @@ ccw (point_t* p1, point_t* p2, point_t* p3)
 }
 
 int
-on_line_p (point_t* p1, point_t* p2, point_t* p3)
+on_line_p (point_t* p1, line_t* l1)
 {
-  if (p2->x <= max (p1->x, p3->x) && p2->x >= min (p1->x, p3->x) &&
-      p2->y <= max (p1->y, p3->y) && p2->y >= min (p1->y, p3->y))
+  if (p1->x <= max (l1->p1.x, l1->p2.x) && p1->x >= min (l1->p1.x, l1->p2.x) &&
+      p1->y <= max (l1->p1.y, l1->p2.y) && p1->y >= min (l1->p1.y, l1->p2.y))
     return 1;
+
   return 0;
 }
 
+/* int */
+/* on_line_p (point_t* p1, point_t* p2, point_t* p3) */
+/* { */
+/*   if (p2->x <= max (p1->x, p3->x) && p2->x >= min (p1->x, p3->x) && */
+/*       p2->y <= max (p1->y, p3->y) && p2->y >= min (p1->y, p3->y)) */
+/*     return 1; */
+/*   return 0; */
+/* } */
+
 int
-intersect1_p (line_t l1, line_t l2)
+intersect_p (line_t l1, line_t l2)
 {
   int a, b, c, d;
 
@@ -115,10 +125,10 @@ intersect1_p (line_t l1, line_t l2)
 
   if (a != b && c != d) return 1;
 
-  if (a == 0 && on_line_p (&l1.p1, &l2.p1, &l1.p2)) return 1;
-  if (b == 0 && on_line_p (&l1.p1, &l2.p2, &l1.p2)) return 1;
-  if (c == 0 && on_line_p (&l2.p1, &l1.p1, &l2.p2)) return 1;
-  if (d == 0 && on_line_p (&l2.p1, &l1.p2, &l2.p2)) return 1;
+  if (a == 0 && on_line_p (&l2.p1, &l1)) return 1;
+  if (b == 0 && on_line_p (&l2.p2, &l1)) return 1;
+  if (c == 0 && on_line_p (&l1.p1, &l2)) return 1;
+  if (d == 0 && on_line_p (&l1.p2, &l2)) return 1;
 
   return 0;
 
@@ -127,7 +137,7 @@ intersect1_p (line_t l1, line_t l2)
 /* Return 1 if point p1 is inside polygon poly, otherwise return 0
  */
 int
-inside (point_t* p1, point_t* poly, ssize_t hullsize) 
+inside_p (point_t* p1, point_t* poly, ssize_t hullsize) 
 {
   int k = 0, l, l1;
   ssize_t i;
@@ -144,7 +154,7 @@ inside (point_t* p1, point_t* poly, ssize_t hullsize)
     
       if (lt.p1.y == lp.p2.y || lt.p1.y == lp.p1.y) l++;
 
-      if (intersect1_p (lt, lp)) k++;
+      if (intersect_p (lt, lp)) k++;
     }
 
   if (l == 2) return 1;
@@ -216,7 +226,7 @@ dpw_concave (point_t* points, int npoints, double d)
 		for (k = 0, j = 1; j < M - 1; j++) 
 		  {
 		    l2.p1 = points[j], l2.p2 = points[j + 1];
-		    if (intersect1_p (l1, l2)) k++;
+		    if (intersect_p (l1, l2)) k++;
 
 		  }
 
