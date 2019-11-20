@@ -106,7 +106,7 @@ on_line_p (point_t* p1, point_t* p2, point_t* p3)
 }
 
 int
-intersect1_p (line_t l1, line_t l2, int t)
+intersect1_p (line_t l1, line_t l2)
 {
   int a, b, c, d;
 
@@ -127,7 +127,7 @@ intersect1_p (line_t l1, line_t l2, int t)
 /* Return 1 if point p1 is inside polygon poly, otherwise return 0
  */
 int
-inside (point_t* p1, point_t* poly, ssize_t hullsize, double dist) 
+inside (point_t* p1, point_t* poly, ssize_t hullsize) 
 {
   int k = 0, l, l1;
   ssize_t i;
@@ -144,7 +144,7 @@ inside (point_t* p1, point_t* poly, ssize_t hullsize, double dist)
     
       if (lt.p1.y == lp.p2.y || lt.p1.y == lp.p1.y) l++;
 
-      if (intersect1_p (lt, lp, 1)) k++;
+      if (intersect1_p (lt, lp)) k++;
     }
 
   if (l == 2) return 1;
@@ -216,7 +216,7 @@ dpw_concave (point_t* points, int npoints, double d)
 		for (k = 0, j = 1; j < M - 1; j++) 
 		  {
 		    l2.p1 = points[j], l2.p2 = points[j + 1];
-		    if (intersect1_p (l1, l2, 0)) k++;
+		    if (intersect1_p (l1, l2)) k++;
 
 		  }
 

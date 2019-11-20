@@ -147,12 +147,15 @@ region_valid_p (region_t *region)
 {
   if (region->xmin >= region->xmax) 
     return 0;
+
   if (region->ymin >= region->ymax) 
     return 0;
+
   return 1;
 }
 
 /* Quick and Dirty Density
+ * TODO: use a convex hull instaed of bb.
  */
 double
 qadd (point_t* points, int npoints)
@@ -161,22 +164,15 @@ qadd (point_t* points, int npoints)
   line_t l1, l2, l3, l4;
   double w, l;
   
-  /* Find the extent values in the dataset */
   for (ymin = 0, ymax = 0, xmin = 0, xmax = 0, i = 1; i < npoints; i++) 
     {
-      if (points[i].y < points[ymin].y) 
-	ymin = i;
-      if (points[i].x < points[xmin].x) 
-	xmin = i;
-      if (points[i].y > points[ymax].y) 
-	ymax = i;
-      if (points[i].x > points[xmax].x) 
-	xmax = i;
+      if (points[i].y < points[ymin].y) ymin = i;
+      if (points[i].x < points[xmin].x) xmin = i;
+      if (points[i].y > points[ymax].y)	ymax = i;
+      if (points[i].x > points[xmax].x)	xmax = i;
     }
 
-  // width
   w = points[xmax].x - points[xmin].x;
-  //length
   l = points[ymax].y - points[ymin].y;
 
   return ((w * l) / npoints) ;
@@ -434,7 +430,7 @@ main (int argc, char **argv)
 	   */
 	  if (hullsize >= 0)
 	    for (i = hullsize+1; i < npr; i++)
-	      if (!inside (&pnts[i], pnts, hullsize, 0)) 
+	      if (!inside (&pnts[i], pnts, hullsize)) 
 		{
 		  hullsize = -1;
 		  break;
