@@ -42,6 +42,7 @@ Generate a boundary of the set of xy points from FILE, or standard input, to sta
 \n\
   ---- xy i/o ----\n\n\
   -d, --delimiter\tThe input xy file record delimiter.\n\
+                 \tIf omitted, the delimiter will be guessed from the first line read.\n\
   -g, --gmt\t\tFormat output as GMT vector multipolygon; Use twice to supress\n\
            \t\tthe initial header (e.g. -gg).\n\
   -n, --name\t\tThe output layer name (only used with -g).\n\
@@ -54,7 +55,9 @@ Generate a boundary of the set of xy points from FILE, or standard input, to sta
              \t\tin input units (e.g. --block 0.001). Specify a blocking region\n\
              \t\tafter the increment if desired (e.g. --block 0.001/west/east/south/north).\n\
   -x, --convex\t\t'Convex Hull' boundary using a monotone chain algorithm. [default]\n\
-  -v, --concave\t\t'Concave Hull' boundary using a distance weighted package wrap algorithm.\n\n\
+              \t\tUse twice to use a package wrap algorithm (e.g. -xx).\n\
+  -v, --concave\t\t'Concave Hull' boundary using a distance weighted package wrap algorithm.\n\
+               \t\tSpecify distance value or - to estimate appropriate distance.\n\n\
   ---- et cetra ----\n\n\
       --verbose\t\tincrease the verbosity.\n\
       --help\t\tprint this help menu and exit.\n\
@@ -64,8 +67,9 @@ With no FILE, or when FILE is --, read standard input.\n\
 All OPTION values must be in the same units as the input xy data.\n\n\
 Examples:\n\
   bounds \t\toutput a convex hull from standard input.\n\
-  bounds -g -k 0.0001\toutput a 'block' boundary from standard input in GMT format.\n\
-  bounds -v 10 -d \",\"\toutput a concave hull from comma-delimited standard input.\n\
+  bounds -g -k0.0001\toutput a GMT formatted 'block' boundary from standard input.\n\
+  bounds -v10 -d,\toutput a concave hull from comma-delimited standard input.\n\
+  bounds -v- in.xyz\toutput a concave hull from file in.xyz\n\
 ");
   exit (1);
 }
@@ -185,7 +189,7 @@ main (int argc, char **argv)
   FILE* fp;
 
   int c, i, status, min, j;
-  int inflag = 0, vflag = 0, sflag = 0, pc = 0, sl = 0;
+  int inflag = 0, vflag = 0, sflag = 0, dflag = 0, pc = 0, sl = 0;
   int cflag = 0, kflag = 0, bflag = 0, gmtflag = 0, nflag = 0;
   double dist;
 
@@ -195,7 +199,8 @@ main (int argc, char **argv)
   ssize_t hullsize;
   ssize_t npr = 0;
 
-  char* delim = " \t";
+  //char* delim = " \t";
+  char* delim;
   char* ptrec = "xy";
   char* kreg = "";
   char* lname = "bounds";
@@ -241,6 +246,7 @@ main (int argc, char **argv)
 	printf ("\n");
 	break;
       case 'd':
+	dflag++;
 	delim = optarg;
 	break;
       case 'r':
@@ -317,11 +323,11 @@ main (int argc, char **argv)
    */
   point_t* pnts;  
   pnts = (point_t*) malloc (sizeof (point_t));
-    
+
   /* Read through the point records and record them in `pnts`.
    */
   i = 0;
-  while (read_point(fp, &rpnt, delim, ptrec) == 0) 
+  while (read_point(fp, &rpnt, &delim, ptrec, dflag) == 0) 
     {
       if (sl > 0) 
 	sl--;
@@ -332,6 +338,8 @@ main (int argc, char **argv)
 	  pnts = temp;
 	  pnts[i].x = rpnt.x, pnts[i].y = rpnt.y;
 	  i++;
+	  if (i>1)
+	    dflag++;
 	}
     }
 

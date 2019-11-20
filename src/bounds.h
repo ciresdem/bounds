@@ -1,5 +1,5 @@
 /*------------------------------------------------------------
- * bounds : version 0.5.0
+ * bounds : version 0.5.5
  *
  * This file is part of BOUNDS
  *
@@ -20,7 +20,7 @@
 #include <float.h>
 #include <limits.h>
 
-#define BOUNDS_VERSION "0.5.3"
+#define BOUNDS_VERSION "0.5.5"
 
 #define MAX_RECORD_LENGTH 1024
 #define MAX_HULLS 100000
@@ -89,10 +89,17 @@ linecnt (FILE *in);
 int
 scanline (char* infile);
 
-/* Read a point record from the given infile
+/* Guess the delimiter from line.
+ * The result will be recorded in `delimiter`
  */
 int
-read_point (FILE *infile, point_t *rpnt, char* delimiter, char* pnt_recr);
+auto_delim_l (char* inl, char** delimiter);
+
+/* Read a point record from the given infile
+ * If dflag < 1 then guess the delimiter and store it's value in `delimiter`.
+ */
+int
+read_point (FILE *infile, point_t *rpnt, char** delimiter, char* pnt_recr, int dflag);
 
 void
 minmax (point_t* points, int npoints, region_t *xyzi);

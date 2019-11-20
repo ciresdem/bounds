@@ -28,8 +28,7 @@ linecnt (FILE *in)
   return recordcnt; 
 }
 
-/* Scan an xyz line and attempt to determine the delimiter and record length 
- * TODO: guess the delimiter
+/* Scan an xyz line and attempt to determine the record length 
  */
 int
 scanline (char* infile) 
@@ -48,10 +47,48 @@ scanline (char* infile)
   return count;
 }
 
-/* Read a point record from the given infile
+/* Guess the delimiter from line.
+ * The result will be recorded in `delimiter`
  */
 int
-read_point (FILE *infile, point_t *rpnt, char* delimiter, char* pnt_recr) 
+auto_delim_l (char* inl, char** delimiter)
+{
+  char *strs;
+  int cnt = 0, j;
+  
+  /* Known delimiters
+   */
+  int nkds = 3;
+  char* kds[3] = {" \t", ",", "|"};
+  
+  strs = malloc (strlen (inl) + 1);
+  strcpy (strs, inl);
+  
+  for (j = 0; j < nkds; j++)
+    {
+      cnt = 0;
+      char* p = strtok (strs, kds[j]);
+      while (p)
+	{
+	  cnt++;
+	  p = strtok (NULL, kds[j]);
+	}
+      if (cnt > 1)
+	{
+	  *delimiter = kds[j];
+	  j = nkds;
+	}
+    }
+  
+  free (strs);  
+  return 1;
+}
+
+/* Read a point record from the given infile
+ * If dflag < 1 then guess the delimiter and store it's value in `delimiter`.
+ */
+int
+read_point (FILE *infile, point_t *rpnt, char** delimiter, char* pnt_recr, int dflag) 
 {
   char tmp[MAX_RECORD_LENGTH] = {0x0};
   char pntp, *strs;
@@ -67,8 +104,8 @@ read_point (FILE *infile, point_t *rpnt, char* delimiter, char* pnt_recr)
   /* read a record */
   if (fgets (tmp, sizeof (tmp), infile) !=0) 
     {
-      strs = malloc(strlen(tmp) + 1);
-      strcpy(strs, tmp);
+      strs = malloc(strlen (tmp) + 1);
+      strcpy (strs, tmp);
       status = 0;
     }
   else 
@@ -79,7 +116,10 @@ read_point (FILE *infile, point_t *rpnt, char* delimiter, char* pnt_recr)
 
   pf_length = strlen (pnt_recr);
 
-  char* p = strtok (strs, delimiter);
+  if (!dflag)
+    dflag = auto_delim_l (strs, delimiter);
+
+  char* p = strtok (strs, *delimiter);
   for (j = 0; j < pf_length; j++) 
     {
       pntp = pnt_recr[j];
@@ -90,7 +130,7 @@ read_point (FILE *infile, point_t *rpnt, char* delimiter, char* pnt_recr)
 	  else if (pntp == 'y') 
 	    rpnt->y = atof (p);
 	}
-      p = strtok (NULL, delimiter);
+      p = strtok (NULL, *delimiter);
     }
   free (strs);  
   return status;
