@@ -393,7 +393,7 @@ main (int argc, char **argv)
     {
       hullsize = pw_convex (pnts, npr);
       
-      for (i = 0; i < hullsize; i++)
+      for (i = 0; i <= hullsize; i++)
 	printf ("%f %f\n", pnts[i].x, pnts[i].y);
       
       if (verbose_flag > 0) 
@@ -413,16 +413,18 @@ main (int argc, char **argv)
       if (dist > 0) hullsize = -1;
       else hullsize = 0;
 
+      /* if (verbose_flag > 0) */
+      /* 	fprintf (stderr,"bounds: %-10s %-10s\n\rbounds: %-10d %-10.12f", "iteration", "distance", pc, dist); */
+
       /* Keep a copy of the original point-set in `pts2` in-case
 	 * we need to re-run with a higher `dist` value. */
       point_t* pnts2;  
-      pnts2 = (point_t*) malloc (npr * sizeof (point_t));
-      memcpy (pnts2, pnts, sizeof (point_t) * npr);
+      pnts2 = (point_t*) malloc ((npr + 1) * sizeof (point_t));
+      memcpy (pnts2, pnts, sizeof (point_t) * (npr + 1));
       
       /* Find a boundary, inrease the distance variable until a boundary is found. */
       while (hullsize == -1) 
 	{
-	  qsort (pnts, npr, sizeof(point_t), sort_max_x);
 	  hullsize = dpw_concave (pnts, npr, dist);
 	  
 	  /* If a hull was found, check that it gathered all the points.
@@ -446,11 +448,19 @@ main (int argc, char **argv)
 	    {
 	      dist += dist, pc++;
 	      memcpy (pnts, pnts2, sizeof (point_t) * (npr + 1));
+	      /* if (verbose_flag > 0)  */
+	      /* 	{ */
+	      /* 	  fprintf (stderr,"\rbounds: %-10d %-10.12f", pc, dist); */
+	      /* 	  fflush (stderr); */
+	      /* 	} */
 	    }
 	  
-	  /* In case something funky happens. */
-	  if (dist == INFINITY || dist == NAN || dist < 0) 
-	    hullsize = 0;
+	  /* In case something funky happens; just make a convex hull */
+	  if (dist == INFINITY || dist == NAN || dist < 0)
+	    { 
+	      memcpy (pnts, pnts2, sizeof (point_t) * (npr + 1));
+	      hullsize = pw_convex (pnts, npr);
+	    }
 	}
       
       /* Print out the hull */

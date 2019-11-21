@@ -132,10 +132,15 @@ theta (point_t* p1, point_t* p2);
 static float
 theta_degrees (point_t* p1, point_t* p2);
 
+/* Return 1 if p1 and p2 are equal
+ */
+int
+pnts_equal_p (point_t p1, point_t p2);
+
 /* Return 1 if l1 and l2 intersect.
  */
 int
-intersect_p (line_t l1, line_t l2);
+intersect_p (line_t l1, line_t l2, int t);
 
 /* Return 1 if p1 is inside poly
  */
