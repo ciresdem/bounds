@@ -65,11 +65,11 @@ Generate a boundary of the set of xy points from FILE, or standard input, to sta
 \n\
 With no FILE, or when FILE is --, read standard input.\n\
 All OPTION values must be in the same units as the input xy data.\n\n\
-Examples:\n\
-  bounds \t\toutput a convex hull from standard input.\n\
-  bounds -g -k0.0001\toutput a GMT formatted 'block' boundary from standard input.\n\
-  bounds -v10 -d,\toutput a concave hull from comma-delimited standard input.\n\
-  bounds -v- in.xyz\toutput a concave hull from file in.xyz\n\
+ Examples:\n\
+  %% bounds \t\toutput a convex hull from standard input.\n\
+  %% bounds -g -k0.0001\toutput a GMT formatted 'block' boundary from standard input.\n\
+  %% bounds -v10 -d,\toutput a concave hull from comma-delimited standard input.\n\
+  %% bounds -v- in.xyz\toutput a concave hull from file in.xyz\n\
 ");
   exit (1);
 }
