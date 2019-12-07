@@ -281,8 +281,8 @@ main (int argc, char **argv)
 	
       case '?':
 	/* getopt_long already printed an error message. */
-	perror("Try 'bounds --help' for more information.\n");
-	exit(EXIT_FAILURE);
+	fprintf (stderr, "Try 'bounds --help' for more information.\n");
+	exit (0);
 	break;
 	
       default:
@@ -306,7 +306,7 @@ main (int argc, char **argv)
       if (!fp) 
 	{
 	  fprintf (stderr,"bounds: Failed to open file: %s\n", fn);
-	  exit (EXIT_FAILURE);
+	  exit (0);
 	}
     } 
   else 
@@ -343,7 +343,7 @@ main (int argc, char **argv)
 	}
     }
 
-  /* If fewet than two points are supplied, exit.
+  /* If fewer than two points are supplied, exit.
    * Optionally, print the GMT header (used to initalize a multipolygon).
    * e.g. cat /dev/null | bounds -g
    */
