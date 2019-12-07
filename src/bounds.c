@@ -37,7 +37,7 @@ static void
 usage () 
 {
   fprintf (stderr, "\
-bounds [OPTION]... [FILE]\n\
+Usage: bounds [OPTION]... [FILE]\n\
 Generate a boundary of the set of xy points from FILE, or standard input, to standard output.\n\
 \n\
   ---- xy i/o ----\n\n\
@@ -54,10 +54,10 @@ Generate a boundary of the set of xy points from FILE, or standard input, to sta
   -k, --block\t\t'Bounding Block' boundary. Specify the blocking increment\n\
              \t\tin input units (e.g. --block 0.001). Specify a blocking region\n\
              \t\tafter the increment if desired (e.g. --block 0.001/west/east/south/north).\n\
-  -x, --convex\t\t'Convex Hull' boundary using a monotone chain algorithm. [default]\n\
-              \t\tUse twice to use a package wrap algorithm (e.g. -xx).\n\
   -v, --concave\t\t'Concave Hull' boundary using a distance weighted package wrap algorithm.\n\
-               \t\tSpecify distance value or - to estimate appropriate distance.\n\n\
+               \t\tSpecify distance value or - to estimate appropriate distance.\n\
+  -x, --convex\t\t'Convex Hull' boundary using a monotone chain algorithm. [default]\n\
+              \t\tUse twice to use a package wrap algorithm (e.g. -xx).\n\n\
   ---- et cetra ----\n\n\
       --verbose\t\tincrease the verbosity.\n\
       --help\t\tprint this help menu and exit.\n\
@@ -70,6 +70,9 @@ All OPTION values must be in the same units as the input xy data.\n\n\
  %% bounds -g -k0.0001\toutput a GMT formatted 'block' boundary from standard input.\n\
  %% bounds -v10 -d,\toutput a concave hull from comma-delimited standard input.\n\
  %% bounds -v- in.xyz\toutput a concave hull from file in.xyz\n\
+\n\
+Report bugs to <matthew.love@colorado.edu>\n\
+CIRES DEM home page: <http://ciresgroups.colorado.edu/coastalDEM>\n\
 ");
   exit (1);
 }
