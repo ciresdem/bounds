@@ -3,7 +3,7 @@
  *
  * This file is part of BOUNDS
  *
- * Copyright (c) 2016, 2018, 2019 Matthew Love <matthew.love@colorado.edu>
+ * Copyright (c) 2016 - 2020 Matthew Love <matthew.love@colorado.edu>
  * BOUNDS is liscensed under the GPL v.2 or later and 
  * is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -36,6 +36,44 @@ minmax (point_t* points, int npoints, region_t *xyzi)
 	xyzi->ymax = points[p].y;
     }
 }
+
+/* /\* Get the minimum and maximum values from a point stream */
+/*  *\/ */
+/* void */
+/* box (FILE *infile, region_t *xyzi)  */
+/* { */
+/*   int p, i; */
+/*   double ymin, ymax, xmin, xmax; */
+/*   point_t rpnt; */
+/*   ssize_t npr = 0; */
+/*   int dflag = 0, sl = 0; */
+/*   char* delim; */
+/*   char* ptrec = "xy"; */
+
+/*   while (read_point(fp, &rpnt, &delim, ptrec, dflag) == 0)  */
+/*     { */
+/*       if (sl > 0)  */
+/* 	sl--; */
+/*       else  */
+/* 	{ */
+/* 	  if (npr==0) */
+/* 	    { */
+/* 	      xyzi->ymin = rpnt.y, xyzi->ymax = rpnt.y; */
+/* 	      xyzi->xmin = rpnt.x, xyzi->xmax = rpnt.x; */
+/* 	    } */
+/* 	  else */
+/* 	    { */
+/* 	      if (rpnt.y < ymin) xyzi->ymin = rpnt.y; */
+/* 	      if (rpnt.x < xmin) xyzi->xmin = rpnt.x; */
+/* 	      if (rpnt.y > ymax) xyzi->ymax = rpnt.y; */
+/* 	      if (rpnt.x > xmax) xyzi->xmax = rpnt.x; */
+/* 	    } */
+/* 	  npr++; */
+/* 	  if (npr>1) */
+/* 	    dflag++; */
+/* 	} */
+/*     }	   */
+/* } */
 
 /* Return 1 if p1 and p2 are equal
  */
@@ -619,4 +657,292 @@ bbp_block(point_t* points, int npoints, double inc, region_t region, int vflag) 
   bnds = NULL;
   
   return (1);
+}
+
+/* "Bounding Block"
+ * Generates a grid at `inc` cell-size and polygonizes it into a boundary.
+ */
+int
+bbs_block(FILE *infile, double inc, region_t region, int vflag) {
+  int i, j, xpos, ypos, edge, l, lxi, lyi;
+  int bp = 0, done = 0, pdone = 0, bcount = 0, fcount = 0, fyi = 0, dflag = 0;
+  point_t rpnt, bb1, bb2, bb3;
+  region_t xyi;
+  ssize_t npr = 0;
+  char* delim;
+  char* ptrec = "xy";
+  
+  /* Gather region info 
+   */
+  if (region_valid_p(&region)) 
+    {
+      xyi = region;
+      if (vflag > 0) fprintf (stderr, "bounds: Using user supplied region: %f/%f/%f/%f\n", 
+			      xyi.xmin, xyi.xmax, xyi.ymin, xyi.ymax);
+    } //else minmax(points, npoints, &xyi);
+  
+  /* Set the rows and columns of the internal grid 
+   */
+  int ysize = fabs((xyi.ymax - xyi.ymin) / inc);// + 1;
+  int xsize = fabs((xyi.xmax - xyi.xmin) / inc);// + 1;
+  ssize_t xys = ((xsize * ysize) * 3) + 1;
+
+  if (vflag > 0) fprintf(stderr,"bounds: Size of internal grid: %d/%d\n", 
+			 ysize, xsize);
+
+  /* Allocate memory for arrays 
+   * `blockarray` will hold the point data location information
+   * `edgearray` wll hold the edge information for each edge cell
+   */
+  int** blockarray;
+  blockarray = (int**) malloc (ysize * sizeof(int*));
+  for (i = 0; i < ysize; i++) blockarray[i] = (int*) malloc (xsize * sizeof (int));
+  
+  if (!blockarray)
+    {
+      if (vflag > 0) 
+	fprintf (stderr,"bounds: Failed to allocate needed memory, try increasing the distance value (%f)\n", inc);
+      exit (EXIT_FAILURE);
+    }
+
+  g_edges_t** edgearray;
+  edgearray = (g_edges_t**) malloc (ysize * sizeof (g_edges_t*));
+  for (i = 0; i < ysize; i++) edgearray[i] = (g_edges_t*) malloc (xsize * sizeof (g_edges_t));
+
+  if (!edgearray) 
+    {
+      if (vflag > 0) 
+	fprintf (stderr,"bounds: Failed to allocate needed memory, try increasing the distance value (%f)\n", inc);
+      exit (EXIT_FAILURE);
+    }
+
+  /* Assign all blockarray values to zero
+   */
+  for (i = 0; i < ysize; i++) 
+    for (j = 0; j < xsize; j++) 
+      blockarray[i][j] = 0;
+
+  if (vflag > 0) fprintf(stderr,"bounds: Gridding points\n");
+
+  while (read_point(infile, &rpnt, &delim, ptrec, dflag) == 0) 
+    {
+      xpos = (rpnt.x - xyi.xmin) / inc;
+      ypos = (rpnt.y - xyi.ymin) / inc;
+      if (xpos >= 0 && xpos < xsize)
+  	if (ypos >= 0 && ypos < ysize)
+  	  blockarray[ypos][xpos] = 1;
+      npr++;
+      if (npr>0)
+	dflag++;
+    }
+
+  if (vflag > 0) 
+    fprintf (stderr,"bounds: %d points gridded\nbounds: recording edges from grid\n", npr);
+
+  /* Allocate memory for the edge points.
+   * There may be more boundary points than input points,
+   * so a new array is used
+   */
+  point_t* bnds;
+  bnds = (point_t*) malloc (sizeof (point_t) * xys);
+
+  if (!bnds) 
+    {
+      if (vflag > 0) 
+	fprintf (stderr,"bounds: Failed to allocate needed memory, try increasing the distance value (%f) or shrinking the region\n", inc);
+      exit (EXIT_FAILURE);
+    }
+  
+  /* Loop through the grid and record the cell edges into edgearray
+   */
+  for (i = 0; i < ysize; i++) 
+    for (j = 0; j < xsize; j++) 
+      if (blockarray[i][j] == 1) 
+	{
+	  if (i == 0 || blockarray[i-1][j] == 0) 
+	    edgearray[i][j].b = 1;
+
+	  if (j == 0 || blockarray[i][j-1] == 0) 
+	    edgearray[i][j].l = 1;
+
+	  if (i == ysize-1 || blockarray[i+1][j] == 0) 
+	    edgearray[i][j].t = 1;
+
+	  if (j == xsize-1 || blockarray[i][j+1] == 0) 
+	    edgearray[i][j].r = 1;
+
+	  /* Set the cell to 2 if there are no edges recorded.
+	   */
+	  if (g_edges_p (edgearray[i][j]) == 0)
+	    blockarray[i][j] = 2;
+	}
+
+  /* Scan the edgearray and arrange and output the edges into polygon(s).
+   * pdone is 1 when we can't find any more edge cells.
+   */
+  while (pdone == 0)
+    {
+      /* Find the first edge in the polygon; add it to bnds and record it's position.
+       */
+      for (i = int_or_zero (fyi - 2); i < ysize; i++) 
+	for (j = 0; j < xsize; j++) 
+	  if (blockarray[i][j] == 1)
+	    {
+	      if (edgearray[i][j].b == 1)
+		{
+		  bb3 = pixel_to_point (j, i, inc, xyi);
+		  bnds[0].x = bb3.x, bnds[0].y = bb3.y;
+		  bnds[1].x = bb3.x + inc, bnds[1].y = bb3.y;
+		  edgearray[i][j].b = 0, bcount = 2;
+		  fyi = i, lxi = j, lyi = i, i = ysize, j = xsize;
+		}
+	      else if (edgearray[i][j].l == 1)
+		{
+		  bb3 = pixel_to_point (j, i, inc, xyi);
+		  bnds[0].x = bb3.x, bnds[0].y = bb3.y + inc;
+		  bnds[1].x = bb3.x, bnds[1].y = bb3.y;
+		  edgearray[i][j].l = 0, bcount = 2;
+		  fyi = i, lxi = j, lyi = i, i = ysize, j = xsize;
+		}
+	      else if (edgearray[i][j].t == 1)
+		{
+		  bb3 = pixel_to_point (j, i, inc, xyi);
+		  bnds[0].x = bb3.x + inc, bnds[0].y = bb3.y + inc;
+		  bnds[1].x = bb3.x, bnds[1].y = bb3.y + inc;
+		  edgearray[i][j].t = 0, bcount = 2;
+		  fyi = i, lxi = j, lyi = i, i = ysize, j = xsize;
+		}
+	      else if (edgearray[i][j].r == 1)
+		{
+		  bb3 = pixel_to_point (j, i, inc, xyi);
+		  bnds[0].x = bb3.x + inc, bnds[0].y = bb3.y + inc;
+		  bnds[1].x = bb3.x + inc, bnds[1].y = bb3.y;
+		  edgearray[i][j].r = 0, bcount = 2;
+		  fyi = i, lxi = j, lyi = i, i = ysize, j = xsize;
+		}
+	    }
+    
+      if (bcount != 2) 
+	  done = 1, pdone = 1;
+      else
+	printf( ">\n" );
+      
+      /* Scan the nearby cells in the edgearray and build polygons.
+       * done is 1 when we match the first point found above.
+       */
+      while (done == 0)
+	{
+	  for (i = int_or_zero (lyi-1); i < int_or_max (lyi + 2, ysize); i++)
+	    for (j = int_or_zero (lxi-1); j < int_or_max (lxi + 2, xsize); j++)
+	      if (blockarray[i][j] == 1)
+		{
+		  if (edgearray[i][j].b == 1)
+		    {
+		      bb3 = pixel_to_point (j, i, inc, xyi);
+		      bb1.x = bb3.x, bb1.y = bb3.y;
+		      bb2.x = bb3.x + inc, bb2.y = bb3.y;
+		      l = pl_match (bnds[bcount - 1], bb1, bb2);
+		      if (l)
+			{
+			  if (pl_match(bnds[0], bb1, bb2)) done = 1;
+			  if (l == 1) bnds[bcount].x = bb2.x, bnds[bcount].y = bb2.y;
+			  else bnds[bcount].x = bb1.x, bnds[bcount].y = bb1.y;
+
+			  edgearray[i][j].b = 0;
+			  lxi = j, lyi = i, bcount++;
+
+			  if (g_edges_p (edgearray[i][j]) == 0) blockarray[i][j] = 2;
+			}
+		    }
+		  if (edgearray[i][j].l == 1)
+		    {
+		      bb3 = pixel_to_point (j, i, inc, xyi);
+		      bb1.x = bb3.x, bb1.y = bb3.y + inc;
+		      bb2.x = bb3.x, bb2.y = bb3.y;
+		      l = pl_match (bnds[bcount - 1], bb1, bb2);
+		      if (l)
+			{
+			  if (pl_match(bnds[0], bb1, bb2)) done = 1;
+			  if (l == 1) bnds[bcount].x = bb2.x, bnds[bcount].y = bb2.y;
+			  else bnds[bcount].x = bb1.x, bnds[bcount].y = bb1.y;
+
+			  edgearray[i][j].l = 0;
+			  lxi = j, lyi = i, bcount++;
+			  
+			  if (g_edges_p (edgearray[i][j]) == 0) blockarray[i][j] = 2;
+			}
+		    }
+		  if (edgearray[i][j].t == 1)
+		    {
+		      bb3 = pixel_to_point (j, i, inc, xyi);
+		      bb1.x = bb3.x + inc, bb1.y = bb3.y + inc;
+		      bb2.x = bb3.x, bb2.y = bb3.y + inc;
+		      l = pl_match (bnds[bcount - 1], bb1, bb2);
+		      if (l)
+			{
+			  if (pl_match(bnds[0], bb1, bb2)) done = 1;
+			  if (l == 1) bnds[bcount].x = bb2.x, bnds[bcount].y = bb2.y;
+			  else bnds[bcount].x = bb1.x, bnds[bcount].y = bb1.y;
+
+			  edgearray[i][j].t = 0;
+			  lxi = j, lyi = i, bcount++;
+
+			  if (g_edges_p (edgearray[i][j]) == 0) blockarray[i][j] = 2;
+			}
+		    }
+		  if (edgearray[i][j].r == 1)
+		    {
+		      bb3 = pixel_to_point (j, i, inc, xyi);
+		      bb1.y = bb3.y + inc, bb1.x = bb3.x + inc;
+		      bb2.x = bb3.x + inc, bb2.y = bb3.y;
+		      l = pl_match (bnds[bcount - 1], bb1, bb2);
+		      if (l)
+			{
+			  if (pl_match(bnds[0], bb1, bb2)) done = 1;
+			  if (l == 1) bnds[bcount].x = bb2.x, bnds[bcount].y = bb2.y;
+			  else bnds[bcount].x = bb1.x, bnds[bcount].y = bb1.y;
+
+			  edgearray[i][j].r = 0;
+			  lxi = j, lyi = i, bcount++;
+
+			  if (g_edges_p (edgearray[i][j]) == 0) blockarray[i][j] = 2;
+			}
+		    }
+		}
+	}
+
+      for (edge = 0; edge < bcount; edge++) 
+	printf("%f %f\n", bnds[edge].x, bnds[edge].y);
+  
+      /* Reset some values 
+       */
+      fcount = fcount + bcount;
+      bcount = 0, done = 0;
+      
+      if (pdone == 0) 
+	bp++;
+    }
+
+  /* Cleanup up and return.
+   */
+  for (i = 0; i < ysize; i++) 
+    {
+      free (blockarray[i]);
+      free (edgearray[i]);
+      blockarray[i] = NULL;
+      edgearray[i] = NULL;
+    }
+
+  free (blockarray);
+  blockarray = NULL;
+  free (edgearray);
+  edgearray = NULL;
+  
+  if (vflag > 0) 
+    fprintf (stderr,"bounds: Found %d total boundary points\n", fcount);
+
+  free (bnds);
+  bnds = NULL;
+  
+  return (0);
 }

@@ -3,7 +3,7 @@
  * 
  * This file is part of BOUNDS
  *
- * Copyright (c) 2011, 2012, 2016, 2018, 2019 Matthew Love <matthew.love@colorado.edu>
+ * Copyright (c) 2011, 2012, 2016 - 2020 Matthew Love <matthew.love@colorado.edu>
  * BOUNDS is liscensed under the GPL v.2 or later and 
  * is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,13 +24,13 @@ static void
 print_version(const char* command_name, const char* command_version) 
 {
   fprintf (stderr, "%s %s \n\
-Copyright © 2011, 2012, 2016, 2018, 2019 Matthew Love <matthew.love@colorado.edu> \n\
+Copyright © 2011, 2012, 2016 - 2020 Matthew Love <matthew.love@colorado.edu> \n\
 %s is liscensed under the GPL v.2 or later and is \n\
 distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n\
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A\n\
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.\n\
 <http://www.gnu.org/licenses/>\n", command_name, command_version, command_name);
-  exit (1);
+  exit (0);
 }
 
 static void 
@@ -74,7 +74,7 @@ Examples:\n\
 Report bugs to <matthew.love@colorado.edu>\n\
 CIRES DEM home page: <http://ciresgroups.colorado.edu/coastalDEM>\n\
 ");
-  exit (1);
+  exit (0);
 }
 
 /* Compare functions for use in qsort
@@ -285,7 +285,7 @@ main (int argc, char **argv)
       case '?':
 	/* getopt_long already printed an error message. */
 	fprintf (stderr, "Try 'bounds --help' for more information.\n");
-	exit (0);
+	exit (1);
 	break;
 	
       default:
@@ -293,8 +293,12 @@ main (int argc, char **argv)
       }
     }
   
-  if (version_flag) 
-    print_version("bounds", BOUNDS_VERSION);
+  if (version_flag)
+    {
+      //print_version("bounds", BOUNDS_VERSION);
+      printf("%s\n", BOUNDS_VERSION);
+      exit (0);
+    }
 
   if (help_flag) 
     usage();
@@ -309,7 +313,7 @@ main (int argc, char **argv)
       if (!fp) 
 	{
 	  fprintf (stderr,"bounds: Failed to open file: %s\n", fn);
-	  exit (0);
+	  exit (1);
 	}
     } 
   else 
@@ -321,45 +325,12 @@ main (int argc, char **argv)
   if (verbose_flag > 0) 
     fprintf (stderr, "bounds: Working on file: %s\n", fn);
   
-  /* Allocate memory for the `pnts` and `pnts2` array using the total number of points.
-   * `pnts2` is only used by concave and gets allocated there.
-   */
-  point_t* pnts;  
+  /* /\* Allocate memory for the `pnts` and `pnts2` array using the total number of points. */
+  /*  * `pnts2` is only used by concave and gets allocated there. */
+  /*  *\/ */
+  point_t* pnts;
   pnts = (point_t*) malloc (sizeof (point_t));
 
-  /* Read through the point records and record them in `pnts`.
-   */
-  i = 0;
-  while (read_point(fp, &rpnt, &delim, ptrec, dflag) == 0) 
-    {
-      if (sl > 0) 
-	sl--;
-      else 
-	{
-	  npr++;
-	  point_t* temp = realloc (pnts, (npr + 1) * sizeof (point_t));
-	  pnts = temp;
-	  pnts[i].x = rpnt.x, pnts[i].y = rpnt.y;
-	  i++;
-	  if (i>1)
-	    dflag++;
-	}
-    }
-
-  /* If fewer than two points are supplied, exit.
-   * Optionally, print the GMT header (used to initalize a multipolygon).
-   * e.g. cat /dev/null | bounds -g
-   */
-  if (i < 2) 
-    {
-      if (gmtflag == 1)
-	printf ("# @VGMT1.0 @GMULTIPOLYGON\n# @NName\n# @Tstring\n# FEATURE_DATA\n");
-      exit (EXIT_FAILURE);
-    }
-
-  if (verbose_flag > 0) 
-    fprintf (stderr,"bounds: Processing %d points\n", i);
- 
   /* This is for the GMT compatibility. More can be done here.
    */
   if (gmtflag == 1)
@@ -369,6 +340,11 @@ main (int argc, char **argv)
     }
   else if (gmtflag == 2)
     printf (">\n# @D%s\n# @P\n", lname);
+  else if (gmtflag == 3)
+    {
+      printf ("# @VGMT1.0 @GMULTIPOLYGON\n# @NName\n# @Tstring\n# FEATURE_DATA\n");
+      exit(0);
+    }
   else
     printf (">\n");
     
@@ -380,6 +356,7 @@ main (int argc, char **argv)
    */
   if (cflag == 1) 
     {
+      load_pnts (fp, &pnts, &npr, ptrec);
       qsort (pnts, npr, sizeof (point_t), compare);
       mc_convex (pnts, npr, &hull, &hullsize);
       
@@ -394,6 +371,7 @@ main (int argc, char **argv)
    */
   else if (cflag == 2)
     {
+      load_pnts (fp, &pnts, &npr, ptrec);
       hullsize = pw_convex (pnts, npr);
       
       for (i = 0; i <= hullsize; i++)
@@ -410,6 +388,8 @@ main (int argc, char **argv)
    */
   else if (vflag == 1) 
     {
+      load_pnts (fp, &pnts, &npr, ptrec);
+
       /* The distance parameter can't be less than zero */
       if (!dist)
 	dist = qadd (pnts, npr);
@@ -481,25 +461,46 @@ main (int argc, char **argv)
    */
   else if (bflag == 1) 
     {
-      int xmin, xmax, ymin, ymax;
-      
-      /* Find the extent values in the dataset */
-      for (ymin = 0, ymax = 0, xmin = 0, xmax = 0, i = 1; i < npr; i++) 
+      double ymin, ymax, xmin, xmax;
+      /* Read through the point records and find the min/max bounding box.
+       */
+      i = 0;
+      while (read_point(fp, &rpnt, &delim, ptrec, dflag) == 0) 
 	{
-	  if (pnts[i].y < pnts[ymin].y) 
-	    ymin = i;
-	  if (pnts[i].x < pnts[xmin].x) 
-	    xmin = i;
-	  if (pnts[i].y > pnts[ymax].y) 
-	    ymax = i;
-	  if (pnts[i].x > pnts[xmax].x) 
-	    xmax = i;
-	}
-      printf ("%f %f\n", pnts[xmin].x, pnts[ymin].y);
-      printf ("%f %f\n", pnts[xmin].x, pnts[ymax].y);
-      printf ("%f %f\n", pnts[xmax].x, pnts[ymax].y);
-      printf ("%f %f\n", pnts[xmax].x, pnts[ymin].y);
-      printf ("%f %f\n", pnts[xmin].x, pnts[ymin].y);
+	  if (sl > 0) 
+	    sl--;
+	  else 
+	    {
+	      npr++;
+	      if (i==0)
+		{
+		  ymin = rpnt.y;
+		  ymax = rpnt.y;
+		  xmin = rpnt.x;
+		  xmax = rpnt.x;
+		}
+	      else
+		{
+		  if (rpnt.y < ymin) 
+		    ymin = rpnt.y;
+		  if (rpnt.x < xmin) 
+		    xmin = rpnt.x;
+		  if (rpnt.y > ymax) 
+		    ymax = rpnt.y;
+		  if (rpnt.x > xmax) 
+		    xmax = rpnt.x;
+		}
+	      i++;
+	      if (i>1)
+		dflag++;
+	    }
+	}	  
+      printf ("%f %f\n", xmin, ymin);
+      printf ("%f %f\n", xmin, ymax);
+      printf ("%f %f\n", xmax, ymax);
+      printf ("%f %f\n", xmax, ymin);
+      printf ("%f %f\n", xmin, ymin);
+      if (verbose_flag > 0) fprintf (stderr, "bounds: processed %d points.\n", npr);
     }
   
   /* Bounding Block - polygonize a grid of the points using `dist` cell-size
@@ -532,17 +533,20 @@ main (int argc, char **argv)
       /* The distance parameter can't be less than zero */
       if (dist > 0) 
 	if (kflag == 1)
-	  bbp_block (pnts, npr, dist, rgn, verbose_flag);
-	else if (kflag == 2)
-	  bbe_block (pnts, npr, dist, rgn, verbose_flag);
+	  bbs_block (fp, dist, rgn, verbose_flag);
+	  //bbp_block (pnts, npr, dist, rgn, verbose_flag);
+      //else if (kflag == 2)
+      //  bbe_block (pnts, npr, dist, rgn, verbose_flag);
     }
 
   free (pnts);
   pnts = NULL;
   fclose (fp);
 
-  if (verbose_flag > 0) 
-    fprintf (stderr, "bounds: done\n");
-
-  exit (1);
+  if (verbose_flag > 0)
+    {
+      fprintf (stderr, "bounds: done\n");
+    }
+  
+  exit (0);
 }

@@ -117,8 +117,11 @@ read_point (FILE *infile, point_t *rpnt, char** delimiter, char* pnt_recr, int d
   pf_length = strlen (pnt_recr);
 
   if (!dflag)
-    dflag = auto_delim_l (strs, delimiter);
-
+    {
+      dflag = auto_delim_l (strs, delimiter);
+      fprintf(stderr,"bounds: delimiter is '%s'\n", *delimiter);
+    }
+  
   char* p = strtok (strs, *delimiter);
   for (j = 0; j < pf_length; j++) 
     {
@@ -134,4 +137,33 @@ read_point (FILE *infile, point_t *rpnt, char** delimiter, char* pnt_recr, int d
     }
   free (strs);  
   return status;
+}
+
+/* Load points
+ */
+int
+load_pnts(FILE *infile, point_t **pnts, ssize_t *npr, char* pnt_recr)
+{
+  point_t rpnt;
+  int i = 0, dflag = 0, sl = 0;
+  char* delim;
+    
+  /* Read through the point records and record them in `pnts`.
+   */
+  *npr = 0;
+  while (read_point(infile, &rpnt, &delim, pnt_recr, dflag) == 0)
+    {
+      if (sl > 0)
+  	sl--;
+      else
+  	{
+  	  *npr = *npr + 1;
+  	  *pnts = realloc (*pnts, (*npr+1) * sizeof (point_t));
+  	  (*pnts)[i].x = rpnt.x, (*pnts)[i].y = rpnt.y;
+  	  i++;
+  	  if (i>0)
+  	    dflag++;
+  	}
+    }
+  fprintf (stderr,"bounds: Processing %d points\n", *npr);
 }

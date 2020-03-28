@@ -1,9 +1,9 @@
 /*------------------------------------------------------------
- * bounds : version 0.5.5
+ * bounds : version 0.5.6
  *
  * This file is part of BOUNDS
  *
- * Copyright (c) 2011, 2012, 2016, 2018, 2019 Matthew Love <matthew.love@colorado.edu>
+ * Copyright (c) 2011, 2012, 2016 - 2020 Matthew Love <matthew.love@colorado.edu>
  * BOUNDS is liscensed under the GPL v.2 or later and 
  * is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,7 +20,7 @@
 #include <float.h>
 #include <limits.h>
 
-#define BOUNDS_VERSION "0.5.5"
+#define BOUNDS_VERSION "0.5.6"
 
 #define MAX_RECORD_LENGTH 1024
 #define MAX_HULLS 100000
@@ -101,6 +101,9 @@ auto_delim_l (char* inl, char** delimiter);
 int
 read_point (FILE *infile, point_t *rpnt, char** delimiter, char* pnt_recr, int dflag);
 
+int
+load_points (FILE *infile, point_t **pnts, ssize_t *npr, char* pnt_recr);
+
 void
 minmax (point_t* points, int npoints, region_t *xyzi);
 
@@ -177,5 +180,8 @@ bbe_block (point_t* points, int npoints, double inc, region_t region, int vflag)
 
 int
 bbp_block (point_t* points, int npoints, double inc, region_t region, int vflag);
+
+int
+bbs_block (FILE *infile, double inc, region_t region, int vflag);
 
 // End
