@@ -912,7 +912,7 @@ bbs_block(FILE *infile, double inc, region_t region, int vflag) {
 	}
 
       for (edge = 0; edge < bcount; edge++) 
-	printf("%f %f\n", bnds[edge].x, bnds[edge].y);
+	printf("%.10f %.10f\n", bnds[edge].x, bnds[edge].y);
   
       /* Reset some values 
        */
