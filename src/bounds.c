@@ -529,14 +529,9 @@ main (int argc, char **argv)
 	    }
 	  p = strtok (NULL, "/");
 	}
-      
+
       /* The distance parameter can't be less than zero */
-      if (dist > 0) 
-	if (kflag == 1)
-	  bbs_block (fp, dist, rgn, verbose_flag);
-	  //bbp_block (pnts, npr, dist, rgn, verbose_flag);
-      //else if (kflag == 2)
-      //  bbe_block (pnts, npr, dist, rgn, verbose_flag);
+      if (dist > 0) bbs_block (fp, dist, rgn, verbose_flag);
     }
 
   free (pnts);

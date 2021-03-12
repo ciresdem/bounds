@@ -102,7 +102,7 @@ int
 read_point (FILE *infile, point_t *rpnt, char** delimiter, char* pnt_recr, int dflag);
 
 int
-load_points (FILE *infile, point_t **pnts, ssize_t *npr, char* pnt_recr);
+load_pnts (FILE *infile, point_t **pnts, ssize_t *npr, char* pnt_recr);
 
 void
 minmax (point_t* points, int npoints, region_t *xyzi);
