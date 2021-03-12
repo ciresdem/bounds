@@ -1,9 +1,9 @@
 /*------------------------------------------------------------
- * bounds : version 0.5.6
+ * bounds : version 0.5.7
  *
  * This file is part of BOUNDS
  *
- * Copyright (c) 2011, 2012, 2016 - 2020 Matthew Love <matthew.love@colorado.edu>
+ * Copyright (c) 2011, 2012, 2016 - 2021 Matthew Love <matthew.love@colorado.edu>
  * BOUNDS is liscensed under the GPL v.2 or later and 
  * is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,7 +20,7 @@
 #include <float.h>
 #include <limits.h>
 
-#define BOUNDS_VERSION "0.5.6"
+#define BOUNDS_VERSION "0.5.7"
 
 #define MAX_RECORD_LENGTH 1024
 #define MAX_HULLS 100000
