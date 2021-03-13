@@ -1,9 +1,9 @@
 #                                               -*- Autoconf -*-
-dnl bounds : version 0.5.7
+dnl bounds : version 0.5.8
 dnl
 dnl This file is part of BOUNDS
 dnl
-dnl Copyright (c) 2011, 2012, 2016, 2018, 2019 Matthew Love <matthew.love@colorado.edu>
+dnl Copyright (c) 2011, 2012, 2016 - 2021 Matthew Love <matthew.love@colorado.edu>
 dnl BOUNDS is liscensed under the GPL v.2 or later and 
 dnl is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,7 +13,7 @@ dnl <http://www.gnu.org/licenses/>
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([bounds], [0.5.7], [matthew.love@colorado.edu])
+AC_INIT([bounds], [0.5.8], [matthew.love@colorado.edu])
 AC_CONFIG_AUX_DIR([./config])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 AC_CONFIG_MACRO_DIR([m4])

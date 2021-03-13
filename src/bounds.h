@@ -1,5 +1,5 @@
 /*------------------------------------------------------------
- * bounds : version 0.5.7
+ * bounds : version 0.5.8
  *
  * This file is part of BOUNDS
  *
@@ -20,7 +20,7 @@
 #include <float.h>
 #include <limits.h>
 
-#define BOUNDS_VERSION "0.5.7"
+#define BOUNDS_VERSION "0.5.8"
 
 #define MAX_RECORD_LENGTH 1024
 #define MAX_HULLS 100000
