@@ -118,40 +118,47 @@ For general usage help from the command-line, the @code{--help} swich can be use
 @verbatim
 ~] bounds --help
 
-bounds infile [Options]
+Usage: bounds [OPTION]... [FILE]
+Generate a boundary of the set of xy points from FILE, or standard input, to standard output.
 
-  Generate a boundary of the given xy point file(s) and print results 
-  to stdout. Optionally, choose between different algorithms to use to 
-  generate the boundary. The default behavior will generate a convex hull 
-  boundary. 
+  ---- xy i/o ----
 
-  infile		The input point file.
+  -d, --delimiter       The input xy file record delimiter.
+                        If omitted, the delimiter will be guessed from the first line read.
+  -g, --gmt             Format output as GMT vector multipolygon; Use twice to supress
+                        the initial header (e.g. -gg).
+  -n, --name            The output layer name (only used with -g).
+  -r, --record          The input record order, 'xy' should represent the locations
+                        of the x and y records, respectively (e.g. --record zdyx).
+  -s, --skip            The number of lines to skip from the input.
 
- Options:
-  -d, --delimiter	The input xy file record delimiter
-     Note: The default will assume a space (" ") is the delimiter.
-  -r, --record		The input record order, 'xy' should represent the locations
-              		of the x and y records, respectively.
-     Note: The default will assume the record begins with 'xy'. If the x and 
-           y records are located elsewhere, fill in records with any letter. i.e.
-           `-r zyx` for data where the record is `elevation,y-value,x-value`.
-  -s, --skip		Skip header lines in the input xy file; specify the number of lines
-            		to skip here.
+  ---- bounds ----
 
-  -b, --box		Generate a 'bounding box' boundary. 
-  -k, --block		Generate a 'block' boundary. 
-             		Specify the blocking increment here. (e.g. --block 0.001)
-     Note: The blocking increment should be in the same units as the input xy data.
-  -x, --convex		Generate a 'convex hull' boundary using a monotone chain algorithm. (Default)
-  -v, --concave		Generate a 'concave hull' boundary using a distance weighted 
-               		package wrap algorithm. 
-               		Specify the distance threshold used in generating the concave 
-               		hull as an argument here. (e.g. --concave 0.01)
-     Note: The distance threshold should be in the same units as the input xy data.
+  -b, --box             'Bounding Box' boundary. 
+  -k, --block           'Bounding Block' boundary. Specify the blocking increment
+                        in input units (e.g. --block 0.001). Specify a blocking region
+                        after the increment if desired (e.g. --block 0.001/west/east/south/north).
+  -v, --concave         'Concave Hull' boundary using a distance weighted package wrap algorithm.
+                        Specify distance value or - to estimate appropriate distance.
+  -x, --convex          'Convex Hull' boundary using a monotone chain algorithm. [default]
+                        Use twice to use a package wrap algorithm (e.g. -xx).
 
-  --help		Print this help menu and exit.
-  --version		Print version information and exit.
+  ---- et cetra ----
 
+      --verbose         increase the verbosity.
+      --help            print this help menu and exit.
+      --version         print version information and exit.
+
+
+With no FILE, or when FILE is --, read standard input.
+All OPTION values must be in the same units as the input xy data.
+
+Examples:
+  bounds                output a convex hull from standard input.
+  bounds -g -k0.0001    output a GMT formatted 'block' boundary from standard input.
+  bounds -v10 -d,       output a concave hull from comma-delimited standard input.
+  bounds -v- in.xyz     output a concave hull from file in.xyz
+  
 @end verbatim
 
 @itemize @bullet
