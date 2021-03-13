@@ -3,7 +3,7 @@
  *
  * This file is part of BOUNDS
  *
- * Copyright (c) 2011, 2012, 2018, 2019 Matthew Love <matthew.love@colorado.edu>
+ * Copyright (c) 2011, 2012, 2018 - 2021 Matthew Love <matthew.love@colorado.edu>
  * BOUNDS is liscensed under the GPL v.2 or later and 
  * is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -105,15 +105,6 @@ on_line_p (point_t* p1, line_t* l1)
 
   return 0;
 }
-
-/* int */
-/* on_line_p (point_t* p1, point_t* p2, point_t* p3) */
-/* { */
-/*   if (p2->x <= max (p1->x, p3->x) && p2->x >= min (p1->x, p3->x) && */
-/*       p2->y <= max (p1->y, p3->y) && p2->y >= min (p1->y, p3->y)) */
-/*     return 1; */
-/*   return 0; */
-/* } */
 
 int
 intersect_p (line_t l1, line_t l2, int t)
