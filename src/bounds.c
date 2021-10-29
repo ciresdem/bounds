@@ -24,7 +24,7 @@ static void
 print_version(const char* command_name, const char* command_version) 
 {
   fprintf (stderr, "%s %s \n\
-Copyright © 2011, 2012, 2016 - 2020 Matthew Love <matthew.love@colorado.edu> \n\
+Copyright © 2011, 2012, 2016 - 2021 Matthew Love <matthew.love@colorado.edu> \n\
 %s is liscensed under the GPL v.2 or later and is \n\
 distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n\
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A\n\
@@ -45,7 +45,7 @@ Generate a boundary of the set of xy points from FILE, or standard input, to sta
                  \tIf omitted, the delimiter will be guessed from the first line read.\n\
   -g, --gmt\t\tFormat output as GMT vector multipolygon; Use twice to supress\n\
            \t\tthe initial header (e.g. -gg).\n\
-  -n, --name\t\tThe output layer name (only used with -g).\n\
+  -n, --name\t\tThe output layer name (only used with -g or -j).\n\
   -r, --record\t\tThe input record order, 'xy' should represent the locations\n\
               \t\tof the x and y records, respectively (e.g. --record zdyx).\n\
   -s, --skip\t\tThe number of lines to skip from the input.\n\n\
@@ -312,7 +312,7 @@ main (int argc, char **argv)
       fp = fopen (fn, "r");
       if (!fp) 
 	{
-	  fprintf (stderr,"bounds: Failed to open file: %s\n", fn);
+	  fprintf (stderr,"bounds: failed to open file: %s\n", fn);
 	  exit (1);
 	}
     } 
@@ -323,11 +323,11 @@ main (int argc, char **argv)
     }
 
   if (verbose_flag > 0) 
-    fprintf (stderr, "bounds: Working on file: %s\n", fn);
+    fprintf (stderr, "bounds: working on file: %s\n", fn);
   
-  /* /\* Allocate memory for the `pnts` and `pnts2` array using the total number of points. */
-  /*  * `pnts2` is only used by concave and gets allocated there. */
-  /*  *\/ */
+  /* Allocate memory for the `pnts` and `pnts2` array using the total number of points.
+     `pnts2` is only used by concave and gets allocated there.
+  */
   point_t* pnts;
   pnts = (point_t*) malloc (sizeof (point_t));
 
@@ -344,7 +344,7 @@ main (int argc, char **argv)
     {
       printf ("# @VGMT1.0 @GMULTIPOLYGON\n# @NName\n# @Tstring\n# FEATURE_DATA\n");
       exit(0);
-    }
+    }  
   else
     printf (">\n");
     
@@ -356,29 +356,29 @@ main (int argc, char **argv)
    */
   if (cflag == 1) 
     {
-      load_pnts (fp, &pnts, &npr, ptrec);
+      load_pnts (fp, &pnts, &npr, ptrec, verbose_flag);
       qsort (pnts, npr, sizeof (point_t), compare);
       mc_convex (pnts, npr, &hull, &hullsize);
       
       for (i = 0; i < hullsize; i++)
 	printf ("%f %f\n", hull[i]->x, hull[i]->y);
-      
+
       if (verbose_flag > 0) 
-	fprintf (stderr, "bounds: Found %d convex boundary points.\n", hullsize);
+	fprintf (stderr, "bounds: found %d convex boundary points.\n", hullsize);
     }
   
   /* 'Package Wrap' Convex Hull Algorithm 
    */
   else if (cflag == 2)
     {
-      load_pnts (fp, &pnts, &npr, ptrec);
+      load_pnts (fp, &pnts, &npr, ptrec, verbose_flag);
       hullsize = pw_convex (pnts, npr);
-      
+
       for (i = 0; i <= hullsize; i++)
 	printf ("%f %f\n", pnts[i].x, pnts[i].y);
       
       if (verbose_flag > 0) 
-	fprintf (stderr, "bounds: Found %d convex boundary points.\n", hullsize);
+	fprintf (stderr, "bounds: found %d convex boundary points.\n", hullsize);
     }
   
   /* Concave Hull - distance weighted pacakage wrap algorithm 
@@ -388,7 +388,7 @@ main (int argc, char **argv)
    */
   else if (vflag == 1) 
     {
-      load_pnts (fp, &pnts, &npr, ptrec);
+      load_pnts (fp, &pnts, &npr, ptrec, verbose_flag);
 
       /* The distance parameter can't be less than zero */
       if (!dist)
@@ -451,7 +451,7 @@ main (int argc, char **argv)
 	printf ("%f %f\n", pnts[i].x, pnts[i].y);
       
       if (verbose_flag > 0) 
-	  fprintf (stderr, "bounds: Found %d total boundary points\n", hullsize);
+	  fprintf (stderr, "bounds: found %d total boundary points\n", hullsize);
 
       free (pnts2);
       pnts2 = NULL;
@@ -465,7 +465,7 @@ main (int argc, char **argv)
       /* Read through the point records and find the min/max bounding box.
        */
       i = 0;
-      while (read_point(fp, &rpnt, &delim, ptrec, dflag) == 0) 
+      while (read_point(fp, &rpnt, &delim, ptrec, dflag, verbose_flag) == 0) 
 	{
 	  if (sl > 0) 
 	    sl--;
@@ -494,12 +494,14 @@ main (int argc, char **argv)
 	      if (i>1)
 		dflag++;
 	    }
-	}	  
+	}
+      
       printf ("%f %f\n", xmin, ymin);
       printf ("%f %f\n", xmin, ymax);
       printf ("%f %f\n", xmax, ymax);
       printf ("%f %f\n", xmax, ymin);
       printf ("%f %f\n", xmin, ymin);
+      
       if (verbose_flag > 0) fprintf (stderr, "bounds: processed %d points.\n", npr);
     }
   

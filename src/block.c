@@ -148,13 +148,13 @@ bbs_block(FILE *infile, double inc, region_t region, int vflag) {
   if (region_valid_p(&region)) 
     {
       xyi = region;
-      if (vflag > 0) fprintf (stderr, "bounds: Using user supplied region: %f/%f/%f/%f\n", 
+      if (vflag > 0) fprintf (stderr, "bounds: using user supplied region: %f/%f/%f/%f\n", 
 			      xyi.xmin, xyi.xmax, xyi.ymin, xyi.ymax);
     }
   else
     {
-      fprintf (stderr, "bounds: Scanning xy data for region\n");
-      load_pnts (infile, &pnts, &npr, ptrec);
+      fprintf (stderr, "bounds: scanning xy data for region\n");
+      load_pnts (infile, &pnts, &npr, ptrec, vflag);
       minmax(pnts, npr, &xyi);
       forp_flag = 1;
     }
@@ -167,7 +167,7 @@ bbs_block(FILE *infile, double inc, region_t region, int vflag) {
 
   if (vflag > 0) {
     fprintf(stderr, "bounds: region is %f/%f/%f/%f\n", xyi.xmin, xyi.xmax, xyi.ymin, xyi.ymax);
-    fprintf(stderr,"bounds: Size of internal grid: %d/%d\n", 
+    fprintf(stderr,"bounds: size of internal grid: %d/%d\n", 
 	    ysize, xsize);
   }
 
@@ -182,7 +182,7 @@ bbs_block(FILE *infile, double inc, region_t region, int vflag) {
   if (!blockarray)
     {
       if (vflag > 0) 
-	fprintf (stderr,"bounds: Failed to allocate needed memory, try increasing the distance value (%f)\n", inc);
+	fprintf (stderr,"bounds: failed to allocate needed memory, try increasing the distance value (%f)\n", inc);
       exit (EXIT_FAILURE);
     }
 
@@ -193,7 +193,7 @@ bbs_block(FILE *infile, double inc, region_t region, int vflag) {
   if (!edgearray) 
     {
       if (vflag > 0) 
-	fprintf (stderr,"bounds: Failed to allocate needed memory, try increasing the distance value (%f)\n", inc);
+	fprintf (stderr,"bounds: failed to allocate needed memory, try increasing the distance value (%f)\n", inc);
       exit (EXIT_FAILURE);
     }
 
@@ -203,11 +203,11 @@ bbs_block(FILE *infile, double inc, region_t region, int vflag) {
     for (j = 0; j < xsize; j++) 
       blockarray[i][j] = 0;
 
-  if (vflag > 0) fprintf(stderr,"bounds: Gridding points\n");
+  if (vflag > 0) fprintf(stderr,"bounds: gridding points\n");
 
   if (forp_flag == 0)
     {
-      while (read_point(infile, &rpnt, &delim, ptrec, dflag) == 0) 
+      while (read_point(infile, &rpnt, &delim, ptrec, dflag, vflag) == 0) 
 	{
 	  xpos = (rpnt.x - xyi.xmin) / inc;
 	  ypos = (rpnt.y - xyi.ymin) / inc;
@@ -246,7 +246,7 @@ bbs_block(FILE *infile, double inc, region_t region, int vflag) {
   if (!bnds) 
     {
       if (vflag > 0) 
-	fprintf (stderr,"bounds: Failed to allocate needed memory, try increasing the distance value (%f) or shrinking the region\n", inc);
+	fprintf (stderr,"bounds: failed to allocate needed memory, try increasing the distance value (%f) or shrinking the region\n", inc);
       exit (EXIT_FAILURE);
     }
   
@@ -322,7 +322,8 @@ bbs_block(FILE *infile, double inc, region_t region, int vflag) {
       if (bcount != 2) 
 	  done = 1, pdone = 1;
       else
-	printf( ">\n" );
+	if (bp > 0)
+	  printf( ">\n" );
       
       /* Scan the nearby cells in the edgearray and build polygons.
        * done is 1 when we match the first point found above.
@@ -407,10 +408,13 @@ bbs_block(FILE *infile, double inc, region_t region, int vflag) {
 		    }
 		}
 	}
-
+      
       for (edge = 0; edge < bcount; edge++) 
 	printf("%.10f %.10f\n", bnds[edge].x, bnds[edge].y);
-  
+
+      //if (pdone == 0)
+      //printf( ">\n" );
+      
       /* Reset some values 
        */
       fcount = fcount + bcount;
@@ -436,7 +440,7 @@ bbs_block(FILE *infile, double inc, region_t region, int vflag) {
   edgearray = NULL;
   
   if (vflag > 0) 
-    fprintf (stderr,"bounds: Found %d total boundary points\n", fcount);
+    fprintf (stderr,"bounds: found %d total boundary points\n", fcount);
 
   free (bnds);
   bnds = NULL;

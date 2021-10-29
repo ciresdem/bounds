@@ -88,7 +88,7 @@ auto_delim_l (char* inl, char** delimiter)
  * If dflag < 1 then guess the delimiter and store it's value in `delimiter`.
  */
 int
-read_point (FILE *infile, point_t *rpnt, char** delimiter, char* pnt_recr, int dflag) 
+read_point (FILE *infile, point_t *rpnt, char** delimiter, char* pnt_recr, int dflag, int vflag) 
 {
   char tmp[MAX_RECORD_LENGTH] = {0x0};
   char pntp, *strs;
@@ -119,7 +119,7 @@ read_point (FILE *infile, point_t *rpnt, char** delimiter, char* pnt_recr, int d
   if (!dflag)
     {
       dflag = auto_delim_l (strs, delimiter);
-      fprintf(stderr,"bounds: delimiter is '%s'\n", *delimiter);
+      if (vflag > 0) fprintf(stderr,"bounds: delimiter is '%s'\n", *delimiter);
     }
   
   char* p = strtok (strs, *delimiter);
@@ -142,7 +142,7 @@ read_point (FILE *infile, point_t *rpnt, char** delimiter, char* pnt_recr, int d
 /* Load points
  */
 int
-load_pnts(FILE *infile, point_t **pnts, ssize_t *npr, char* pnt_recr)
+load_pnts(FILE *infile, point_t **pnts, ssize_t *npr, char* pnt_recr, int vflag)
 {
   point_t rpnt;
   int i = 0, dflag = 0, sl = 0;
@@ -151,7 +151,7 @@ load_pnts(FILE *infile, point_t **pnts, ssize_t *npr, char* pnt_recr)
   /* Read through the point records and record them in `pnts`.
    */
   *npr = 0;
-  while (read_point(infile, &rpnt, &delim, pnt_recr, dflag) == 0)
+  while (read_point(infile, &rpnt, &delim, pnt_recr, dflag, vflag) == 0)
     {
       if (sl > 0)
   	sl--;
@@ -165,5 +165,6 @@ load_pnts(FILE *infile, point_t **pnts, ssize_t *npr, char* pnt_recr)
   	    dflag++;
   	}
     }
-  fprintf (stderr,"bounds: Processing %d points\n", *npr);
+  if (vflag > 0)
+    fprintf (stderr,"bounds: processing %d points\n", *npr);
 }

@@ -20,7 +20,7 @@
 #include <float.h>
 #include <limits.h>
 
-#define BOUNDS_VERSION "0.5.8"
+#define BOUNDS_VERSION "0.5.9"
 
 #define MAX_RECORD_LENGTH 1024
 #define MAX_HULLS 100000
@@ -99,10 +99,10 @@ auto_delim_l (char* inl, char** delimiter);
  * If dflag < 1 then guess the delimiter and store it's value in `delimiter`.
  */
 int
-read_point (FILE *infile, point_t *rpnt, char** delimiter, char* pnt_recr, int dflag);
+read_point (FILE *infile, point_t *rpnt, char** delimiter, char* pnt_recr, int dflag, int vflag);
 
 int
-load_pnts (FILE *infile, point_t **pnts, ssize_t *npr, char* pnt_recr);
+load_pnts (FILE *infile, point_t **pnts, ssize_t *npr, char* pnt_recr, int vflag);
 
 void
 minmax (point_t* points, int npoints, region_t *xyzi);
