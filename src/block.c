@@ -131,7 +131,7 @@ pl_match (point_t p1, point_t p2, point_t p3)
  * Generates a grid at `inc` cell-size and polygonizes it into a boundary.
  */
 int
-bbs_block(FILE *infile, double inc, region_t region, int vflag) {
+bbs_block(FILE *infile, double inc, region_t region, int vflag, int jflag) {
   int i, j, xpos, ypos, edge, l, lxi, lyi;
   int bp = 0, done = 0, pdone = 0, bcount = 0, fcount = 0, fyi = 0, dflag = 0;
   point_t rpnt, bb1, bb2, bb3;
@@ -323,7 +323,10 @@ bbs_block(FILE *infile, double inc, region_t region, int vflag) {
 	  done = 1, pdone = 1;
       else
 	if (bp > 0)
-	  printf( ">\n" );
+	  if (jflag > 0)
+	    printf ( "]],[[" );
+	  else
+	    printf ( ">\n" );
       
       /* Scan the nearby cells in the edgearray and build polygons.
        * done is 1 when we match the first point found above.
@@ -408,9 +411,22 @@ bbs_block(FILE *infile, double inc, region_t region, int vflag) {
 		    }
 		}
 	}
-      
-      for (edge = 0; edge < bcount; edge++) 
-	printf("%.10f %.10f\n", bnds[edge].x, bnds[edge].y);
+
+      if (jflag > 0)
+	{
+	  for (edge = 0; edge < bcount-1; edge++) 
+	    printf("[%.10f, %.10f],", bnds[edge].x, bnds[edge].y);
+	  //fprintf (stderr, "%d", bcount-1);
+	  if ( bcount > 1 )
+	    {
+	      printf("[%.10f, %.10f]", bnds[bcount-1].x, bnds[bcount-1].y);
+	    }
+	}
+      else
+	{
+	  for (edge = 0; edge < bcount; edge++) 
+	    printf("%.10f %.10f\n", bnds[edge].x, bnds[edge].y);
+	}
 
       //if (pdone == 0)
       //printf( ">\n" );

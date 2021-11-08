@@ -45,6 +45,8 @@ Generate a boundary of the set of xy points from FILE, or standard input, to sta
                  \tIf omitted, the delimiter will be guessed from the first line read.\n\
   -g, --gmt\t\tFormat output as GMT vector multipolygon; Use twice to supress\n\
            \t\tthe initial header (e.g. -gg).\n\
+  -j, --json\t\tFormat output as GeoJSON vector multipolygon; Use twice to supress\n\
+           \t\tthe initial header (e.g. -jj).\n\
   -n, --name\t\tThe output layer name (only used with -g or -j).\n\
   -r, --record\t\tThe input record order, 'xy' should represent the locations\n\
               \t\tof the x and y records, respectively (e.g. --record zdyx).\n\
@@ -193,7 +195,7 @@ main (int argc, char **argv)
 
   int c, i, status, min, j;
   int inflag = 0, vflag = 0, sflag = 0, dflag = 0, pc = 0, sl = 0;
-  int cflag = 0, kflag = 0, bflag = 0, gmtflag = 0, nflag = 0;
+  int cflag = 0, kflag = 0, bflag = 0, gmtflag = 0, jsonflag = 0, nflag = 0;
   double dist;
 
   point_t rpnt, pnt;
@@ -222,6 +224,7 @@ main (int argc, char **argv)
 	  {"skip", required_argument, 0, 's'},
 	  {"name", required_argument, 0, 'n'},
 	  {"gmt", no_argument, 0, 'g'},
+	  {"json", no_argument, 0, 'j'},
 	  {"record", required_argument, 0, 'r'},
 	  {"box", no_argument, 0, 'b'},
 	  {"block", required_argument, 0, 'k'},
@@ -232,7 +235,7 @@ main (int argc, char **argv)
       /* getopt_long stores the option index here. */
       int option_index = 0;
       
-      c = getopt_long (argc, argv, "gd:n:r:s:bk:xv:",
+      c = getopt_long (argc, argv, "gjd:n:r:s:bk:xv:",
 		       long_options, &option_index);
     
       /* Detect the end of the options. */
@@ -265,6 +268,9 @@ main (int argc, char **argv)
 	break;
       case 'g':
 	gmtflag++;
+	break;
+      case 'j':
+	jsonflag++;
 	break;
       case 'b':
 	bflag++;
@@ -344,7 +350,22 @@ main (int argc, char **argv)
     {
       printf ("# @VGMT1.0 @GMULTIPOLYGON\n# @NName\n# @Tstring\n# FEATURE_DATA\n");
       exit(0);
-    }  
+    }
+  else if (jsonflag == 1)
+    {
+      printf ("{ \"type\": \"FeatureCollection\",\n\"features\": [\n");
+      printf ("{ \"type\": \"Feature\", \"properties\": { \"Name\": \"%s\" },", lname);
+      printf (" \"geometry\": { \"type\": \"MultiPolygon\",\n \"coordinates\": [[[");
+    }
+  else if (jsonflag == 2)
+    {
+      printf ("{ \"type\": \"Feature\", \"properties\": { \"Name\": \"%s\" },", lname);
+      printf (" \"geometry\": { \"type\": \"MultiPolygon\",\n \"coordinates\": [[[");
+    }
+  else if (jsonflag == 3)
+    {
+      printf ("");
+    }
   else
     printf (">\n");
     
@@ -359,9 +380,18 @@ main (int argc, char **argv)
       load_pnts (fp, &pnts, &npr, ptrec, verbose_flag);
       qsort (pnts, npr, sizeof (point_t), compare);
       mc_convex (pnts, npr, &hull, &hullsize);
-      
-      for (i = 0; i < hullsize; i++)
-	printf ("%f %f\n", hull[i]->x, hull[i]->y);
+
+      if (jsonflag > 0)
+	{
+	  for (i = 0; i < hullsize-1; i++)
+	    printf ("[%f, %f], ", hull[i]->x, hull[i]->y);
+	  printf("[%f, %f]", hull[hullsize-1]->x, hull[hullsize-1]->y);
+	}
+      else
+	{
+	  for (i = 0; i < hullsize; i++)
+	    printf ("%f %f\n", hull[i]->x, hull[i]->y);
+	}
 
       if (verbose_flag > 0) 
 	fprintf (stderr, "bounds: found %d convex boundary points.\n", hullsize);
@@ -374,8 +404,17 @@ main (int argc, char **argv)
       load_pnts (fp, &pnts, &npr, ptrec, verbose_flag);
       hullsize = pw_convex (pnts, npr);
 
-      for (i = 0; i <= hullsize; i++)
-	printf ("%f %f\n", pnts[i].x, pnts[i].y);
+      if (jsonflag > 0)
+	{
+	  for (i = 0; i < hullsize; i++)
+	    printf ("[%f, %f], ", pnts[i].x, pnts[i].y);
+	  printf ("[%f, %f]", pnts[hullsize].x, pnts[hullsize].y);
+	}
+      else
+	{
+	  for (i = 0; i <= hullsize; i++)
+	    printf ("%f %f\n", pnts[i].x, pnts[i].y);
+	}
       
       if (verbose_flag > 0) 
 	fprintf (stderr, "bounds: found %d convex boundary points.\n", hullsize);
@@ -447,8 +486,17 @@ main (int argc, char **argv)
 	}
       
       /* Print out the hull */
-      for (i = 0; i <= hullsize; i++)
-	printf ("%f %f\n", pnts[i].x, pnts[i].y);
+      if (jsonflag > 0)
+	{
+	  for (i = 0; i < hullsize; i++)
+	    printf ("[%f, %f], ", pnts[i].x, pnts[i].y);
+	  printf ("[%f, %f]", pnts[hullsize].x, pnts[hullsize].y);
+	}
+      else
+	{
+	  for (i = 0; i <= hullsize; i++)
+	    printf ("%f %f\n", pnts[i].x, pnts[i].y);
+	}
       
       if (verbose_flag > 0) 
 	  fprintf (stderr, "bounds: found %d total boundary points\n", hullsize);
@@ -495,12 +543,23 @@ main (int argc, char **argv)
 		dflag++;
 	    }
 	}
-      
-      printf ("%f %f\n", xmin, ymin);
-      printf ("%f %f\n", xmin, ymax);
-      printf ("%f %f\n", xmax, ymax);
-      printf ("%f %f\n", xmax, ymin);
-      printf ("%f %f\n", xmin, ymin);
+
+      if (jsonflag > 0)
+	{
+	  printf ("[%f,%f],,", xmin, ymin);
+	  printf ("[%f,%f],", xmin, ymax);
+	  printf ("[%f,%f],", xmax, ymax);
+	  printf ("[%f,%f],", xmax, ymin);
+	  printf ("[%f,%f]", xmin, ymin);
+	}
+      else
+	{
+	  printf ("%f %f\n", xmin, ymin);
+	  printf ("%f %f\n", xmin, ymax);
+	  printf ("%f %f\n", xmax, ymax);
+	  printf ("%f %f\n", xmax, ymin);
+	  printf ("%f %f\n", xmin, ymin);
+	}
       
       if (verbose_flag > 0) fprintf (stderr, "bounds: processed %d points.\n", npr);
     }
@@ -533,13 +592,22 @@ main (int argc, char **argv)
 	}
 
       /* The distance parameter can't be less than zero */
-      if (dist > 0) bbs_block (fp, dist, rgn, verbose_flag);
+      if (dist > 0) bbs_block (fp, dist, rgn, verbose_flag, jsonflag);
     }
 
   free (pnts);
   pnts = NULL;
   fclose (fp);
 
+  if (jsonflag == 1)
+    {
+      printf ("]]]}}]}\n");
+    }
+  else if (jsonflag == 2)
+    {
+      printf("]]]}}");
+    }
+  
   if (verbose_flag > 0)
     {
       fprintf (stderr, "bounds: done\n");

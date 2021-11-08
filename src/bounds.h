@@ -176,6 +176,6 @@ pw_convex (point_t* points, ssize_t npoints);
  * as the input points.
  */
 int
-bbs_block (FILE *infile, double inc, region_t region, int vflag);
+bbs_block (FILE *infile, double inc, region_t region, int vflag, int jflag);
 
 // End
