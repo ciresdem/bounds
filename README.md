@@ -52,6 +52,18 @@ Examples:
   bounds -v- in.xyz     output a concave hull from file in.xyz
 ```
 
+![](./media/bounds_box.jpg)
+
+**Figure 1.** NOS survey H08891 bounded with 'box'
+
 ![](./media/bounds_block.jpg)
 
-**Figure 1.** NOS survey H08891 bounded with 'block'
+**Figure 2.** NOS survey H08891 bounded with 'block'
+
+![](./media/bounds_convex.jpg)
+
+**Figure 3.** NOS survey H08891 bounded with 'convex'
+
+![](./media/bounds_concave.jpg)
+
+**Figure 4.** NOS survey H08891 bounded with 'concave'
