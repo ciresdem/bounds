@@ -3,7 +3,7 @@
  *
  * This file is part of BOUNDS
  *
- * Copyright (c) 2011, 2012, 2018 - 2021 Matthew Love <matthew.love@colorado.edu>
+ * Copyright (c) 2011, 2012, 2018 - 2023 Matthew Love <matthew.love@colorado.edu>
  * BOUNDS is liscensed under the GPL v.2 or later and 
  * is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
