@@ -9,6 +9,7 @@ With Bounds, generate an ogr-gmt compatible boundary vector of a given point set
 
 ---------------------------
 
+```
 bounds [OPTION]... [FILE]
 Generate a boundary of the set of xy points from FILE, or standard input, to standard output.
 
@@ -49,3 +50,4 @@ Examples:
   bounds -g -k0.0001    output a GMT formatted 'block' boundary from standard input.
   bounds -v10 -d,       output a concave hull from comma-delimited standard input.
   bounds -v- in.xyz     output a concave hull from file in.xyz
+```
