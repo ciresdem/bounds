@@ -51,3 +51,7 @@ Examples:
   bounds -v10 -d,       output a concave hull from comma-delimited standard input.
   bounds -v- in.xyz     output a concave hull from file in.xyz
 ```
+
+![](./media/bounds_block.jpg)
+
+**Figure 1.** NOS survey H08891 bounded with 'block'
